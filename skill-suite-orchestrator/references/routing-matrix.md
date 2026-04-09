@@ -9,10 +9,13 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 - Do not attach helper skills on speculation or "just in case."
 - Add a supporting skill only when the task has an explicit unmet requirement that the primary skill does not cover.
 - Hard ceiling: avoid more than 4 skills unless the user explicitly asks for an end-to-end, cross-phase workflow.
+- Never include `skill-suite-orchestrator` itself in `chosen_subskills`; list only delegated downstream skills.
 - Never enable all browser skills together.
 - Never enable all debugging skills together.
 - Never pull in `senior-fullstack` by default.
 - Treat `using-agent-skills` as a meta-skill and exclude it from normal default routing.
+- Before selecting frontend debugging or browser validation, confirm the repository exposes a runnable app or UI surface, or that the user explicitly points to one.
+- In non-app repositories, do not infer frontend bug-fixing or browser-validation routes from vague page or bug language.
 
 ## 1. 审核项目
 
@@ -37,7 +40,8 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 **Primary route selection**
 
-- 默认优先级 -> `spec-driven-development` → `api-and-interface-design` → `planning-and-task-breakdown`
+- 默认必须委派 -> `spec-driven-development` → `api-and-interface-design` → `planning-and-task-breakdown`
+- 除非仓库中明显不存在可分析的规格、接口或设计边界，否则不要跳过前两个。
 - 只有需求明显模糊、目标不成形、边界不清时，才在最前面加 `idea-refine` 或 `brainstorming`
 
 **Add only when needed**
@@ -50,8 +54,8 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 **Intent -> chosen_subskills**
 
-- “分析这个架构” -> `spec-driven-development`, `api-and-interface-design`
-- “帮我把这个想法收成可执行架构” -> `idea-refine`, `spec-driven-development`, `api-and-interface-design`
+- “分析这个架构” -> `spec-driven-development`, `api-and-interface-design`, `planning-and-task-breakdown`
+- “帮我把这个想法收成可执行架构” -> `idea-refine`, `spec-driven-development`, `api-and-interface-design`, `planning-and-task-breakdown`
 - “给这个方案拆任务” -> `spec-driven-development`, `api-and-interface-design`, `planning-and-task-breakdown`
 
 ## 3. 页面生成
@@ -60,6 +64,7 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 - 提到风格、视觉、参考图、品牌感、调性、版式方向 -> `frontend-design`
 - 提到 React、组件、实现、落地、可运行代码 -> `frontend-ui-engineering`
+- 如果仓库明显不是 app 型仓库，且用户没有给出真实页面入口、组件入口或运行目标，不要掉进前端 bug 修复或浏览器验证路线；保持在设计或规划路由。
 
 **Add only when needed**
 
@@ -72,8 +77,9 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 **Intent -> chosen_subskills**
 
-- “做一个登录页” -> `frontend-design`, `frontend-ui-engineering`
-- “做一个 Next.js 落地页并遵守最佳实践” -> `frontend-design`, `frontend-ui-engineering`, `vercel-react-best-practices`
+- “设计一个登录页视觉方案” -> `frontend-design`
+- “实现一个登录页组件” -> `frontend-ui-engineering`
+- “做一个 Next.js 落地页并遵守最佳实践” -> `frontend-ui-engineering`, `vercel-react-best-practices`
 - “先一起确定这个页面的方向再做” -> `brainstorming`, `frontend-design`
 
 ## 4. 调试修复
@@ -91,13 +97,16 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 **Boundary rule**
 
-- 默认不要同时启用 `systematic-debugging` 和 `debugging-and-error-recovery`。
+- 默认不得同时启用 `systematic-debugging` 和 `debugging-and-error-recovery`。
+- 永远不要在同一个默认路由里同时委派这两个调试 skill。
 - 先选一个；只有在验证阶段确认当前调试协议不足时，才切换或升级。
+- 如果仓库不是 app 型仓库，不要把模糊的页面或 UI 任务误判成前端 bug 修复路线，除非用户明确指向真实页面或交互入口。
 
 **Intent -> chosen_subskills**
 
-- “修这个 bug” -> `systematic-debugging`, `test-driven-development`
-- “CI 里这个测试挂了” -> `debugging-and-error-recovery`, `test-driven-development`
+- “修这个 bug” -> `systematic-debugging`
+- “CI 里这个测试挂了” -> `debugging-and-error-recovery`
+- “这个回归 bug 先补失败用例再修” -> `debugging-and-error-recovery`, `test-driven-development`
 - “页面上这个交互有问题，帮我定位” -> `systematic-debugging`, `browser-testing-with-devtools`
 
 ## 5. 浏览器验证
@@ -163,7 +172,9 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 ## Anti-Patterns
 
 - 不要把“审核项目 + 架构分析 + 页面生成 + 调试修复 + 浏览器验证 + 上线”一次性全开。
+- 不要把 `skill-suite-orchestrator` 自己写进 `chosen_subskills`。
 - 不要在没有明确浏览器目标时同时启用 `webapp-testing`、`browser-testing-with-devtools`、`agent-browser`。
 - 不要为了“保险”同时启用 `systematic-debugging` 和 `debugging-and-error-recovery`。
 - 不要因为“可能有帮助”就附加 skill；一个 skill 够用时不要加第二个。
 - 不要因为是大任务就默认启用 `senior-fullstack`。
+- 不要在非 app 型仓库里默认走前端 bug 修复或浏览器验证路线。
