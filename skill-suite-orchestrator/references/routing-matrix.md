@@ -10,10 +10,12 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 - Add a supporting skill only when the task has an explicit unmet requirement that the primary skill does not cover.
 - Hard ceiling: avoid more than 4 skills unless the user explicitly asks for an end-to-end, cross-phase workflow.
 - Never include `skill-suite-orchestrator` itself in `chosen_subskills`; list only delegated downstream skills.
+- Never include `skill-suite-orchestrator` itself in `chosen_subskills` in any scenario, without exception.
 - Never enable all browser skills together.
 - Never enable all debugging skills together.
 - Never pull in `senior-fullstack` by default.
 - Treat `using-agent-skills` as a meta-skill and exclude it from normal default routing.
+- Do not route to plugin-owned or other external skills unless the user explicitly asks for them.
 - Before selecting frontend debugging or browser validation, confirm the repository exposes a runnable app or UI surface, or that the user explicitly points to one.
 - In non-app repositories, do not infer frontend bug-fixing or browser-validation routes from vague page or bug language.
 
@@ -62,13 +64,15 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 **Primary route selection**
 
+- 页面生成默认只允许从以下本地 skill 中选择：`frontend-design`、`frontend-ui-engineering`、`api-and-interface-design`、`vercel-react-best-practices`、`brainstorming`
 - 提到风格、视觉、参考图、品牌感、调性、版式方向 -> `frontend-design`
-- 提到 React、组件、实现、落地、可运行代码 -> `frontend-ui-engineering`
+- 提到 React、组件、实现、页面结构、落地、可运行代码 -> `frontend-ui-engineering`
 - 如果仓库明显不是 app 型仓库，且用户没有给出真实页面入口、组件入口或运行目标，不要掉进前端 bug 修复或浏览器验证路线；保持在设计或规划路由。
+- 不要逃逸到未在本地矩阵中声明的外部插件 skill，例如 `build-web-apps:frontend-skill`，除非用户明确要求使用外部插件能力。
 
 **Add only when needed**
 
-- `brainstorming`: 页面目标、风格、信息层级不清晰。
+- `brainstorming`: 页面目标、风格、信息层级不清晰时，才作为前置辅助。
 - `frontend-design`: 当主路由是 `frontend-ui-engineering`，但任务又明确要求强视觉方向或品牌表达。
 - `frontend-ui-engineering`: 当主路由是 `frontend-design`，且任务要求实际落地成可运行界面代码。
 - `vercel-react-best-practices`: 技术栈是 React / Next.js，且需要遵守现代实现模式。
@@ -79,6 +83,7 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 - “设计一个登录页视觉方案” -> `frontend-design`
 - “实现一个登录页组件” -> `frontend-ui-engineering`
+- “为这个项目生成一个前端页面方案” -> `frontend-ui-engineering`, `api-and-interface-design`
 - “做一个 Next.js 落地页并遵守最佳实践” -> `frontend-ui-engineering`, `vercel-react-best-practices`
 - “先一起确定这个页面的方向再做” -> `brainstorming`, `frontend-design`
 
@@ -173,6 +178,7 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 - 不要把“审核项目 + 架构分析 + 页面生成 + 调试修复 + 浏览器验证 + 上线”一次性全开。
 - 不要把 `skill-suite-orchestrator` 自己写进 `chosen_subskills`。
+- 不要把外部插件 skill 写进页面生成场景的默认 `chosen_subskills`。
 - 不要在没有明确浏览器目标时同时启用 `webapp-testing`、`browser-testing-with-devtools`、`agent-browser`。
 - 不要为了“保险”同时启用 `systematic-debugging` 和 `debugging-and-error-recovery`。
 - 不要因为“可能有帮助”就附加 skill；一个 skill 够用时不要加第二个。

@@ -22,6 +22,7 @@ Do not activate all skills "for coverage."
 Treat `../plugins/` as out of scope for the default router unless the user explicitly asks for plugin-owned flows.
 Never include `skill-suite-orchestrator` itself in `chosen_subskills`.
 `chosen_subskills` must contain only delegated downstream skills selected from the real local sources above.
+This is an absolute rule in every scenario, including page generation.
 
 ## Required Operating Contract
 
@@ -64,6 +65,7 @@ Never list `skill-suite-orchestrator`.
 - Exceed 4 skills only when the user explicitly asks for cross-phase work and each added skill has a concrete reason.
 - Prefer exactly one browser skill at a time.
 - Prefer exactly one root-cause debugging skill at a time.
+- Do not delegate to plugin-owned or other external skills unless the user explicitly asks for them.
 - Before selecting frontend debugging or browser validation skills, confirm that the repository exposes a runnable app or UI surface, or that the user explicitly points to one.
 - For non-app repositories, do not infer frontend bug-fixing or browser validation from vague page, UI, or bug language.
 - Use `planning-with-files-zh` only for long, multi-step, or cross-session work.
@@ -77,7 +79,7 @@ Pick the dominant scenario first, then add only conditional helpers:
 
 - 项目审核: start from `code-review-and-quality`
 - 架构分析: delegated subskills must default to `spec-driven-development` → `api-and-interface-design` → `planning-and-task-breakdown`; do not skip the first two unless the repository clearly lacks any spec, interface, or design surface to analyze
-- 页面生成: start from `frontend-design` when the user emphasizes style, visual direction, references, or brand feel; start from `frontend-ui-engineering` when the user emphasizes React, components, implementation, or runnable code; if the repository lacks a runnable app or UI surface, stay on design or planning routes and do not reroute into frontend bug-fixing or browser validation by default
+- 页面生成: default allowed local skills are only `frontend-design`, `frontend-ui-engineering`, `api-and-interface-design`, `vercel-react-best-practices`, and `brainstorming` when the request is clearly vague; prefer `frontend-design` for style-led prompts, prefer `frontend-ui-engineering` for React, components, implementation, page structure, or runnable code, add `api-and-interface-design` only for interface or data boundaries, add `vercel-react-best-practices` only for React / Next.js best-practice requirements, and never escape to plugin-owned or external frontend skills unless the user explicitly asks for them
 - 调试修复: choose exactly one of `systematic-debugging` or `debugging-and-error-recovery` by default; never delegate both in the same default route
 - 浏览器验证: start from exactly one of `webapp-testing`, `browser-testing-with-devtools`, or `agent-browser`
 - 交付上线: start from `shipping-and-launch`
@@ -90,8 +92,11 @@ For the current skill inventory, read `references/skill-inventory.md`.
 
 - If the request is creative but underspecified, select `brainstorming` before implementation-facing skills.
 - For architecture analysis, default delegated subskills must be `spec-driven-development`, `api-and-interface-design`, and `planning-and-task-breakdown` in that order; prepend `idea-refine` or `brainstorming` only when goals or boundaries are still unclear, and do not skip the first two unless the repository clearly lacks any spec, interface, or design surface to analyze.
-- For page generation, prefer `frontend-design` for style-led prompts and `frontend-ui-engineering` for implementation-led prompts.
-- If the repository is clearly a non-app workspace, do not infer frontend bug-fixing or browser validation unless the user explicitly points to a real app, page, or UI surface.
+- For page generation, default allowed local skills are only `frontend-design`, `frontend-ui-engineering`, `api-and-interface-design`, `vercel-react-best-practices`, and `brainstorming` when the request is clearly vague.
+- For page generation, prefer `frontend-design` for style-led prompts and `frontend-ui-engineering` for React, components, implementation, page structure, or runnable-code prompts.
+- For page generation, add `api-and-interface-design` only when interfaces, data boundaries, or module contracts are part of the request, and add `vercel-react-best-practices` only when React / Next.js best-practice compliance is explicitly relevant.
+- For page generation, never delegate to plugin-owned or external frontend skills unless the user explicitly asks for them.
+- If the repository is clearly a non-app workspace, do not infer frontend bug-fixing or browser validation unless the user explicitly points to a real app, page, or UI surface; stay within the local page-planning skill set and it is acceptable to state that the repository is better suited for generating a page plan than directly implementing a page.
 - If framework or library correctness matters, add `source-driven-development`.
 - If public contracts or module boundaries are changing, add `api-and-interface-design`.
 - If the work should land in slices, add `incremental-implementation`.
