@@ -18,7 +18,8 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 - Never enable all browser skills together.
 - Never enable all debugging skills together.
 - Never pull in `senior-fullstack` by default.
-- Treat `using-agent-skills` as a meta-skill and exclude it from normal default routing.
+- `using-agent-skills` is DEPRECATED — do not route to it under any circumstance.
+- Use `context-engineering` when agent output quality degrades, context is stale, or a new session needs grounding.
 - Do not route to plugin-owned or other external skills unless the user explicitly asks for them.
 - Before selecting frontend debugging or browser validation, confirm the repository exposes a runnable app or UI surface, or that the user explicitly points to one.
 - In non-app repositories, do not infer frontend bug-fixing or browser-validation routes from vague page or bug language.
@@ -170,7 +171,7 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 - `idea-refine`: 规划之前目标仍然模糊。
 - `spec-driven-development`: 先补规格再拆任务。
-- `using-agent-skills`: 只在需要解释本地 skill 发现逻辑或维护 skill suite 时才用。
+- `context-engineering`: 新会话上下文缺失、跨会话恢复、或输出质量下降时用于重建上下文。
 
 **Intent -> chosen_subskills**
 
@@ -188,3 +189,4 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 - 不要因为“可能有帮助”就附加 skill；一个 skill 够用时不要加第二个。
 - 不要因为是大任务就默认启用 `senior-fullstack`。
 - 不要在非 app 型仓库里默认走前端 bug 修复或浏览器验证路线。
+- 不要路由到 `using-agent-skills`，它已被废弃。

@@ -80,8 +80,8 @@ In `skill_file_reads`, list only the real child `SKILL.md` files that were actua
 - For non-app repositories, do not infer frontend bug-fixing or browser validation from vague page, UI, or bug language.
 - Use `planning-with-files-zh` only for long, multi-step, or cross-session work.
 - Use `find-skills` only when local skills are insufficient or the user explicitly asks for capability discovery.
-- Treat `using-agent-skills` as a meta-skill, not a normal routing target.
-- Avoid recursive meta-routing. Do not pick `using-agent-skills` unless the task is explicitly about skill discovery logic or maintaining the suite itself.
+- Use `context-engineering` when agent output quality degrades, context is stale, or a new session needs grounding before task execution.
+- `using-agent-skills` is DEPRECATED — do not route to it under any circumstance.
 
 ## Scenario Entry Points
 
