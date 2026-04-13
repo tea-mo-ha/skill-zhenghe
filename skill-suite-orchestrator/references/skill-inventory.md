@@ -14,7 +14,7 @@ This inventory distinguishes between **managed skills** (SKILL.md lives in this 
 
 ## Managed: addy-skills
 
-> Source: `addy-skills/` — 21 skills, fully managed.
+> Source: `addy-skills/` — 20 skills, fully managed.
 
 | Skill | 用途 |
 | --- | --- |

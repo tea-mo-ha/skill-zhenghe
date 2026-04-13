@@ -1,4 +1,4 @@
 interface:
   display_name: "Skill Suite Orchestrator"
   short_description: "统一入口总控 skill，按最小必要集调度本工程子 skills。"
-  default_prompt: "Route this task through skill-suite-orchestrator, choose only minimal downstream local subskills from addy-skills, extra-skills, and copied-existing-skills, never include skill-suite-orchestrator itself in chosen_subskills, read every selected child SKILL.md before execution, output skill_file_reads, never use plugin-owned or external skills unless the user explicitly asks, and then continue with plan, execution, and validation."
+  default_prompt: "Route this task through skill-suite-orchestrator, choose only minimal downstream local subskills from addy-skills and extra-skills, never include skill-suite-orchestrator itself in chosen_subskills, read every selected child SKILL.md before execution, output skill_file_reads, never use plugin-owned or external skills unless the user explicitly asks, and then continue with plan, execution, and validation."
