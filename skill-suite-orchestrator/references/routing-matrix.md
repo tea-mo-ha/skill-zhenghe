@@ -1,6 +1,10 @@
 # Routing Matrix
 
+> Version: 1.1.0 | Updated: 2026-04-14 | Source of truth for intent → skill mapping.
+
 Use this matrix to turn user intent into the smallest sufficient subskill set. Always choose one dominant scenario first, then add only the directly relevant helpers.
+
+**Skill provenance**: This matrix routes to both **managed skills** (version-controlled in this repo under `addy-skills/` and `extra-skills/`) and **platform-native skills** (provided by the host runtime). See `skill-inventory.md` for the authoritative source list and version governance rules.
 
 ## Global Rules
 

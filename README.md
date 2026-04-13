@@ -42,9 +42,11 @@ ln -s /path/to/skill-zhenghe/addy-skills/* ~/.gemini/antigravity/skills/
 # 示例：链接 extra-skills
 ln -s /path/to/skill-zhenghe/extra-skills/* ~/.gemini/antigravity/skills/
 
-# 示例：链接 orchestrator
+# 示例：链接 orchestrator 本身（唯一总控入口）
 ln -s /path/to/skill-zhenghe/skill-suite-orchestrator ~/.gemini/antigravity/skills/
 ```
+
+> **架构提示**：此处采用全展平（flatten）挂载机制。`skill-suite-orchestrator` 完全基于注入的上下文和技能名称进行解耦调度，不再依赖相对目录结构，以此实现对 Antigravity 等环境的天然兼容，并支持严格拦截原生平台技能。
 
 Antigravity 会自动从 `~/.gemini/antigravity/skills/` 发现并加载 skill。
 
@@ -86,30 +88,35 @@ validation
 ```
 skill-zhenghe/
 ├── skill-suite-orchestrator/   # 统一入口 — 认知调度层
-│   ├── SKILL.md                # 总控协议
+│   ├── SKILL.md                # 总控协议 + 审计跟踪契约
 │   ├── references/             # 路由矩阵 & 技能清单
-│   ├── adapters/               # 平台适配层
 │   └── agents/                 # 代理配置
-├── addy-skills/                # 工程流程类基础 skill（21 个）
-├── extra-skills/               # 页面设计、浏览器自动化等补充 skill（3 个）
-├── copied-existing-skills/     # 复制引入的通用 skill（7 个）
-├── plugins/                    # 不纳入默认路由的插件
+├── addy-skills/                # 工程流程类基础 skill（20 个，managed）
+├── extra-skills/               # 页面设计、浏览器自动化等补充 skill（3 个，managed）
+├── plugins/                    # 不纳入默认路由的插件 & deprecated skills
+├── CHANGELOG.md                # 版本变更记录
 └── .codex/AGENTS.md            # Codex 仓库级策略
 ```
+
+> **Provenance 说明**：`addy-skills/` 和 `extra-skills/` 下的 skill 是 **managed**（SKILL.md 由本仓库版本控制）。`brainstorming`、`systematic-debugging` 等 7 个 skill 是 **platform-native**（由宿主平台提供），仅在 `skill-inventory.md` 中记录路由描述，不在本仓库中存放副本，以避免版本漂移。
 
 ## 路由维护
 
 - **技能清单** → [`skill-suite-orchestrator/references/skill-inventory.md`](skill-suite-orchestrator/references/skill-inventory.md)
 - **场景路由** → [`skill-suite-orchestrator/references/routing-matrix.md`](skill-suite-orchestrator/references/routing-matrix.md)
 - **总控协议** → [`skill-suite-orchestrator/SKILL.md`](skill-suite-orchestrator/SKILL.md)
+- **版本变更** → [`CHANGELOG.md`](CHANGELOG.md)
 
 ## 默认边界
 
 - `plugins/` 下的内容不纳入默认总控路由
+- Deprecated skills（如 `using-agent-skills`）不参与任何路由
 - 不允许虚构 skill
 - 不允许把全部 skill 一次性启用
 - 不允许把子 skill 原文直接拼接成单一大 prompt
+- 不允许将 platform-native skill 的 SKILL.md 复制到本仓库
 
 ## License
 
 MIT
+

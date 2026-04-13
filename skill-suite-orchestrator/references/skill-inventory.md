@@ -1,8 +1,20 @@
 # Skill Inventory
 
-This inventory covers the real skills currently available under `addy-skills`, `extra-skills`, and `copied-existing-skills`. Use it as the authoritative local catalog for routing.
+> Authoritative catalog for orchestrator routing. Updated: 2026-04-14.
 
-## addy-skills
+This inventory distinguishes between **managed skills** (SKILL.md lives in this repo, version-controlled by us) and **platform-native skills** (provided by the host runtime, referenced for routing but not version-managed here).
+
+## Version Governance
+
+- **Managed skills** (`addy-skills/`, `extra-skills/`): Changes flow through this repository's Git history. Orchestrator routing and runtime execution are guaranteed to reference the same SKILL.md.
+- **Platform-native skills**: The host platform (Antigravity / Codex) owns the SKILL.md. This inventory records only the routing description. If the platform updates a native skill's behavior, the orchestrator's routing decisions remain valid because they depend on intent classification, not on the skill's internal implementation.
+- **Rule**: Do not copy platform-native SKILL.md files into this repository. Copies create hidden version drift between routing expectations and runtime execution.
+
+---
+
+## Managed: addy-skills
+
+> Source: `addy-skills/` — 21 skills, fully managed.
 
 | Skill | 用途 |
 | --- | --- |
@@ -27,7 +39,9 @@ This inventory covers the real skills currently available under `addy-skills`, `
 | `spec-driven-development` | 在编码前先补规格、边界、验收条件。 |
 | `test-driven-development` | 用测试驱动实现或修复，并补回归保护。 |
 
-## extra-skills
+## Managed: extra-skills
+
+> Source: `extra-skills/` — 3 skills, fully managed.
 
 | Skill | 用途 |
 | --- | --- |
@@ -35,26 +49,28 @@ This inventory covers the real skills currently available under `addy-skills`, `
 | `frontend-design` | 生成有明确视觉方向、避免 AI 套路感的高质量页面和组件。 |
 | `webapp-testing` | 用 Playwright 验证本地 Web 应用，适合 UI 流程、截图、日志和回归检查。 |
 
-## copied-existing-skills
+## Platform-Native Skills
 
-| Skill | 用途 |
-| --- | --- |
-| `brainstorming` | 在创意型或需求不完整的任务里先做设计澄清和方案选择。 |
-| `find-skills` | 当本地技能不够或用户想扩展能力时，帮助发现和安装新 skill。 |
-| `mcp-builder` | 构建 MCP server、工具接口和协议层时使用。 |
-| `planning-with-files-zh` | 为长任务、多步骤任务、跨会话任务建立持久化规划文件。 |
-| `senior-fullstack` | 提供通用全栈脚手架和分析能力；只在用户明确要广域 bootstrap 或通用 fullstack 套件时使用。 |
-| `systematic-debugging` | 以“先根因、后修复”为硬约束的调试协议。 |
-| `vercel-react-best-practices` | 在 React / Next.js 项目中套用 Vercel 的性能和实现最佳实践。 |
+> Source: Host platform runtime (e.g. `~/.gemini/antigravity/skills/`). Not version-managed by this repo. The descriptions below are for routing reference only.
 
-## Meta-skills
+| Skill | 用途 | 路由角色 |
+| --- | --- | --- |
+| `brainstorming` | 在创意型或需求不完整的任务里先做设计澄清和方案选择。 | 页面生成前置辅助；架构分析前置澄清 |
+| `find-skills` | 当本地技能不够或用户想扩展能力时，帮助发现和安装新 skill。 | 仅在能力缺口时触发 |
+| `mcp-builder` | 构建 MCP server、工具接口和协议层时使用。 | 架构分析条件辅助 |
+| `planning-with-files-zh` | 为长任务、多步骤任务、跨会话任务建立持久化规划文件。 | 文件规划主路由 |
+| `senior-fullstack` | 提供通用全栈脚手架和分析能力。 | **非默认**；仅在用户明确要广域 bootstrap 时使用 |
+| `systematic-debugging` | 以"先根因、后修复"为硬约束的调试协议。 | 调试主路由（与 `debugging-and-error-recovery` 互斥） |
+| `vercel-react-best-practices` | 在 React / Next.js 项目中套用 Vercel 的性能和实现最佳实践。 | 页面生成条件辅助 |
 
-| Skill | 用途 |
-| --- | --- |
-| `using-agent-skills` | 原有 meta-skill。仅在解释 skill 发现逻辑、比较技能边界、或维护 skill suite 本身时参考，不参与普通任务默认路由。 |
+## Deprecated
+
+| Skill | 状态 | 说明 |
+| --- | --- | --- |
+| `using-agent-skills` | ⛔ DEPRECATED | 原有 meta-skill，职责已被 `skill-suite-orchestrator` 完全接管。保留仅用于维护 skill suite 自身时的参考。不参与任何任务的默认路由。 |
 
 ## Default Exclusions
 
 - `plugins/` 下的 skill 不纳入默认路由面，除非用户明确要求插件工作流。
-- `using-agent-skills` 已降级为 meta-skill，不参与普通任务默认路由，因为 `skill-suite-orchestrator` 已接管总控职责。
-- `senior-fullstack` 不作为默认首选，因为它过于宽泛，不符合“最小必要集”原则。
+- `senior-fullstack` 不作为默认首选，因为它过于宽泛，不符合"最小必要集"原则。
+- Deprecated skills 不参与路由。

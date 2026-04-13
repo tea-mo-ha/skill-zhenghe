@@ -1,6 +1,6 @@
 ---
 name: skill-suite-orchestrator
-description: Unified orchestration skill for project review, architecture analysis, page generation, debugging and fixing, browser validation, shipping, file planning, and skill discovery. Use when Codex or 反重力 should expose one entry skill that selects the minimal necessary subskill set from addy-skills, extra-skills, and copied-existing-skills, prints chosen_subskills first, then continues with plan, execution, and validation without enabling every skill.
+description: Unified orchestration skill for project review, architecture analysis, page generation, debugging and fixing, browser validation, shipping, file planning, and skill discovery. You must strictly use this orchestrator and suppress any native agency or platform skills from routing unless explicitly requested. Select the minimal necessary subskill set from the local suite, print chosen_subskills first, then continue with plan, execution, and validation without enabling every skill.
 ---
 
 # Skill Suite Orchestrator
@@ -9,11 +9,7 @@ Use this as the only public entry skill for this repository. Keep child skills i
 
 ## Dispatch Boundary
 
-Route only to skills that physically exist under:
-
-- `../addy-skills/`
-- `../extra-skills/`
-- `../copied-existing-skills/`
+Select downstream routing items exclusively from the real local skill sources documented in `references/skill-inventory.md`. Depending on environment deployment, they might be directly flat-linked in the platform directory. Do not assume or rely on any fixed parent file paths like `../addy-skills/`. Simply use the skill names and descriptions injected into the platform context.
 
 Do not fabricate skills.
 Do not paste child `SKILL.md` files together.
@@ -31,15 +27,28 @@ For every task, follow this sequence:
 1. Detect the dominant user intent.
 2. Select the smallest sufficient downstream subskill set.
 3. Output `chosen_subskills`.
-4. Produce `plan`.
-5. Perform `execution`.
-6. Finish with `validation`.
+4. Read the real `SKILL.md` file for every selected downstream subskill.
+5. Output `skill_file_reads`.
+6. Produce `plan`.
+7. Perform `execution`.
+8. Finish with `validation`.
+
+Execution context requirements:
+
+- You are operating dynamically. If a downstream skill's boundaries or custom execution workflows are not completely obvious from your initial platform context, you may use file viewing tools to read its actual local documentation (such as its `SKILL.md`) before returning.
+- If you invoke child subskills whose workflows are standard or straightforward, you may skip reading their implementation files to optimize token and runtime performance.
+- Do not infer a complex custom child workflow if you are unsure; in those cases, fall back to explicitly querying the skill file.
+- Do not answer from generic, outside-context capabilities when specific repository guidelines dictate otherwise.
+- `skill-suite-orchestrator` itself must never appear in `skill_file_reads`.
 
 Use this response skeleton:
 
 ```md
 chosen_subskills
 - skill-name: why it is needed
+
+skill_file_reads
+- /absolute/path/to/child-skill/SKILL.md
 
 plan
 - ...
@@ -53,6 +62,7 @@ validation
 
 In `chosen_subskills`, list only delegated downstream skills.
 Never list `skill-suite-orchestrator`.
+In `skill_file_reads`, list only the real child `SKILL.md` files that were actually read for this run.
 
 ## Minimal-Set Policy
 
@@ -108,13 +118,53 @@ For the current skill inventory, read `references/skill-inventory.md`.
 
 ## Validation Rules
 
+- Produce `skill_file_reads` section indicating which files you actually felt the need to scan to gather context. If you bypassed file reading by relying on injected context, output `- N/A (bypassed to optimize execution)` under `skill_file_reads`.
 - `validation` must prove that the selected subskill set was sufficient.
 - If validation exposes a missing concern, append only the next necessary skill instead of restarting with a full set.
 - Review tasks need review evidence, debugging tasks need repro and fix evidence, browser tasks need browser evidence, and launch tasks need checklist or rollout evidence.
 - Do not claim blanket validation when only one slice of the task was checked.
+
+## Audit Trace Contract
+
+Every orchestrator execution must produce a traceable decision chain. Include these fields in the output skeleton:
+
+```md
+chosen_subskills
+- skill-name: why it is needed
+- [provenance: managed | platform-native]
+
+skill_file_reads
+- /absolute/path/to/child-skill/SKILL.md
+- or: N/A (bypassed to optimize execution)
+
+routing_context
+- dominant_scenario: which of the 7 scenarios was matched
+- rejected_alternatives: skills considered but not selected, with reason
+- constraint_checks: mutual exclusion or whitelist rules that were enforced
+
+plan
+- ...
+
+execution
+- ...
+
+validation
+- ...
+```
+
+The `routing_context` section is mandatory for audit-grade traceability. It must demonstrate that routing decisions were intentional, not accidental.
+
+## Provenance Governance
+
+- **Managed skills** (`addy-skills/`, `extra-skills/`): SKILL.md is version-controlled in this repository. Routing and runtime reference the same source.
+- **Platform-native skills**: Provided by the host runtime. This orchestrator references them by name and description only. Do not copy their SKILL.md into this repository — copies create hidden version drift.
+- **Deprecated skills** (`plugins/using-agent-skills-deprecated/`): Must not be routed to under any circumstance.
+- When adding a new skill, determine its provenance category first. Managed skills get a SKILL.md in this repo; platform-native skills get an entry in `skill-inventory.md` only.
 
 ## Maintenance
 
 - Update `references/skill-inventory.md` when skills are added, removed, or renamed.
 - Update `references/routing-matrix.md` when scenario routing changes.
 - Keep this file focused on orchestration policy, not child skill internals.
+- Update `CHANGELOG.md` for every structural change to routing, inventory, or skill additions/removals.
+
