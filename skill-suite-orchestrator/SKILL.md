@@ -22,7 +22,9 @@ This is an absolute rule in every scenario, including page generation.
 
 ## Required Operating Contract
 
-For every task, follow this sequence:
+**⚡ FAST-PATH (Trivial Task Bypass):** If the user's request is purely investigatory, trivial, or atomic (e.g., "fix this typo", "explain this function", "rename this variable", "run this command", "what does this file do?"), DO NOT invoke any downstream skills. DO NOT output `chosen_subskills` or `routing_context`. Just answer the question or execute the simple instruction directly and stop.
+
+For all other complex, multi-step, or architectural tasks, you MUST follow this sequence:
 
 1. Detect the dominant user intent.
 2. Select the smallest sufficient downstream subskill set.
