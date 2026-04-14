@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **skill-suite-orchestrator**: Updated SKILL.md frontmatter description with `CRITICAL SYSTEM OVERRIDE` to enforce routing selection even on trivial tasks or when execution bypassing ("直接执行") is requested by the user.
 - **skill-inventory.md**: Restructured to separate managed skills (addy/extra) from platform-native skills. Added version governance policy preventing hidden version drift.
 - **using-agent-skills**: Deprecated and moved to `plugins/using-agent-skills-deprecated/`. Responsibilities fully taken over by `skill-suite-orchestrator`.
 - **License alignment**: Removed upstream `license: Complete terms in LICENSE.txt` from `frontend-design` and `webapp-testing` frontmatter to align with repository MIT license.
