@@ -55,6 +55,13 @@ This inventory distinguishes between **managed skills** (SKILL.md lives in this 
 
 | Skill | 用途 | 路由角色 |
 | --- | --- | --- |
+| `agency-agents-orchestrator` | 管线管理与整个开发流的多智能体自动化编排。 | 全自动工作流管线建设主路由 |
+| `agency-backend-architect` | 深度后端的系统架构、数据库常规与微服务核心业务设计。 | 架构分析高级辅助 |
+| `agency-devops-automator` | 自动化基础设施建设、CI/CD 深度管线开发与大规模改造。 | 交付上线高级辅助 |
+| `agency-performance-benchmarker`| 底层性能深度分析、系统级极限容量基准测试与优化。 | 项目性能深度诊断 |
+| `agency-security-engineer` | 应用层安全审查、红线防御、威胁建模与漏洞防范深查。 | 项目审核安全深度防御 |
+| `agency-software-architect` | 极度复杂的大规模系统设计、领域驱动设计与跨域架构统筹。 | 架构分析高级辅助 |
+| `agency-sre-site-reliability-engineer` | SLO、熔断告警、高可用性部署设计与核心链路稳定性保证。 | 交付上线稳定性保障 |
 | `brainstorming` | 在创意型或需求不完整的任务里先做设计澄清和方案选择。 | 页面生成前置辅助；架构分析前置澄清 |
 | `find-skills` | 当本地技能不够或用户想扩展能力时，帮助发现和安装新 skill。 | 仅在能力缺口时触发 |
 | `mcp-builder` | 构建 MCP server、工具接口和协议层时使用。 | 架构分析条件辅助 |
@@ -63,14 +70,7 @@ This inventory distinguishes between **managed skills** (SKILL.md lives in this 
 | `systematic-debugging` | 以"先根因、后修复"为硬约束的调试协议。 | 调试主路由（与 `debugging-and-error-recovery` 互斥） |
 | `vercel-react-best-practices` | 在 React / Next.js 项目中套用 Vercel 的性能和实现最佳实践。 | 页面生成条件辅助 |
 
-## Deprecated
-
-| Skill | 状态 | 说明 |
-| --- | --- | --- |
-| `using-agent-skills` | ⛔ DEPRECATED | 原有 meta-skill，职责已被 `skill-suite-orchestrator` 完全接管。保留仅用于维护 skill suite 自身时的参考。不参与任何任务的默认路由。 |
-
 ## Default Exclusions
 
 - `plugins/` 下的 skill 不纳入默认路由面，除非用户明确要求插件工作流。
 - `senior-fullstack` 不作为默认首选，因为它过于宽泛，不符合"最小必要集"原则。
-- Deprecated skills 不参与路由。

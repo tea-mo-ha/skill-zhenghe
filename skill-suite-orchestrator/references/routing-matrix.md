@@ -18,7 +18,6 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 - Never enable all browser skills together.
 - Never enable all debugging skills together.
 - Never pull in `senior-fullstack` by default.
-- `using-agent-skills` is DEPRECATED — do not route to it under any circumstance.
 - Use `context-engineering` when agent output quality degrades, context is stale, or a new session needs grounding.
 - Do not route to plugin-owned or other external skills unless the user explicitly asks for them.
 - Before selecting frontend debugging or browser validation, confirm the repository exposes a runnable app or UI surface, or that the user explicitly points to one.
@@ -32,8 +31,10 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 **Add only when needed**
 
-- `security-and-hardening`: 涉及鉴权、用户输入、密钥、外部服务、存储安全。
-- `performance-optimization`: 涉及加载速度、Core Web Vitals、慢查询、N+1、渲染性能。
+- `security-and-hardening`: 涉及基础鉴权、用户输入、密钥、常规外部服务和存储安全验证。
+- `agency-security-engineer`: 涉及最高安全红线审查、深层威胁建模分析、系统核心资产权限隔离时，全面接管防御。
+- `performance-optimization`: 涉及常见加载速度、Core Web Vitals、慢查询、常见N+1等常规渲染性能。
+- `agency-performance-benchmarker`: 怀疑存在深层性能雪崩隐患、复杂并发卡死、或需要全盘接管极限压测验证架构时。
 - `documentation-and-adrs`: 审核结果需要沉淀为 ADR、评审纪要、风险清单。
 - `systematic-debugging` or `debugging-and-error-recovery`: 审核中已发现正在发生的错误，需要从 review 切到诊断。
 
@@ -54,6 +55,8 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 **Add only when needed**
 
 - `source-driven-development`: 方案强依赖框架或官方最佳实践。
+- `agency-software-architect`: 遇到全局系统级领域建模（DDD）、极度复杂的跨域混合系统整合设计时的高维决策。
+- `agency-backend-architect`: 面临高吞吐量的核心后端重构、大型微服务体系结构拆分或数据库大并发核心建模工作时。
 - `documentation-and-adrs`: 需要沉淀架构决策。
 - `planning-with-files-zh`: 任务很长、跨会话、跨阶段，需要持久化计划。
 - `mcp-builder`: 目标本身就是 MCP server 或工具协议层。
@@ -146,7 +149,9 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 **Add only when needed**
 
-- `ci-cd-and-automation`: 需要改流水线、部署脚本、自动化门禁。
+- `ci-cd-and-automation`: 需要改常规流水线、简单部署脚本、常规阶段的自动化门禁。
+- `agency-devops-automator`: 需要对整个部署管线基建、云资源全自动化配置做重构转型，或打造最高标准 CI/CD Pipeline 时。
+- `agency-sre-site-reliability-engineer`: 上线涉及最核心链路 SLO 以及熔断保护、需要设计极高可用性、强抗灾能力的维稳架构时。
 - `git-workflow-and-versioning`: 需要整理分支、提交、发版或版本控制动作。
 - `deprecation-and-migration`: 上线伴随旧路径下线、灰度迁移或替换策略。
 - `documentation-and-adrs`: 需要补上线说明、运维说明、ADR 或变更记录。
@@ -177,7 +182,21 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 - “帮我规划这个多步骤项目” -> `planning-with-files-zh`
 - “把这个需求拆成任务” -> `planning-and-task-breakdown`
-- “看看有没有现成 skill 能做这件事” -> `find-skills`
+- “试试有没有现成 skill 能做这件事” -> `find-skills`
+
+## 8. 全自动工作流管线建设
+
+**Primary route**
+
+- `agency-agents-orchestrator`
+
+**Add only when needed**
+
+- 此主路由本身即为应对顶级流程与复杂生态。如果其管线涉及到细分的重核能力，在后续阶段交由其他大拿接管。
+
+**Intent -> chosen_subskills**
+
+- “帮我构建或重构这套管线系统的全自动流” -> `agency-agents-orchestrator`
 
 ## Anti-Patterns
 
@@ -189,4 +208,3 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 - 不要因为“可能有帮助”就附加 skill；一个 skill 够用时不要加第二个。
 - 不要因为是大任务就默认启用 `senior-fullstack`。
 - 不要在非 app 型仓库里默认走前端 bug 修复或浏览器验证路线。
-- 不要路由到 `using-agent-skills`，它已被废弃。

@@ -110,7 +110,6 @@ skill-zhenghe/
 ## 默认边界
 
 - `plugins/` 下的内容不纳入默认总控路由
-- Deprecated skills（如 `using-agent-skills`）不参与任何路由
 - 不允许虚构 skill
 - 不允许把全部 skill 一次性启用
 - 不允许把子 skill 原文直接拼接成单一大 prompt

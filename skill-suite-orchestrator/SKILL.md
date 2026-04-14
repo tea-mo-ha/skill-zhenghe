@@ -83,7 +83,6 @@ In `skill_file_reads`, list only the real child `SKILL.md` files that were actua
 - Use `planning-with-files-zh` only for long, multi-step, or cross-session work.
 - Use `find-skills` only when local skills are insufficient or the user explicitly asks for capability discovery.
 - Use `context-engineering` when agent output quality degrades, context is stale, or a new session needs grounding before task execution.
-- `using-agent-skills` is DEPRECATED — do not route to it under any circumstance.
 
 ## Scenario Entry Points
 
@@ -96,6 +95,7 @@ Pick the dominant scenario first, then add only conditional helpers:
 - 浏览器验证: start from exactly one of `webapp-testing`, `browser-testing-with-devtools`, or `agent-browser`
 - 交付上线: start from `shipping-and-launch`
 - 文件规划与辅助技能发现: start from `planning-with-files-zh` or `find-skills`
+- 全自动工作流管线建设: start from `agency-agents-orchestrator`
 
 For the full intent-to-skill mapping, read `references/routing-matrix.md`.
 For the current skill inventory, read `references/skill-inventory.md`.
@@ -116,6 +116,11 @@ For the current skill inventory, read `references/skill-inventory.md`.
 - Use `systematic-debugging` for ambiguous, cross-layer, repeatedly failed, or root-cause-unclear debugging; use `debugging-and-error-recovery` for standard reproducible test, build, and runtime failures with a clearer failure surface.
 - Never delegate both debugging skills in the same default route. Escalate from one to the other only when validation shows the first choice was insufficient.
 - If launch risk is the focus, add `ci-cd-and-automation`, `deprecation-and-migration`, `security-and-hardening`, `performance-optimization`, or `documentation-and-adrs` only when the request actually calls for them.
+- If deep distributed backend concepts, heavy global domain architecture, or microservice dismantling are explicitly requested, delegate to `agency-backend-architect` or `agency-software-architect`.
+- If hardcore security vulnerability audits, extreme threat modeling, or core penetration protection are required, add `agency-security-engineer`.
+- If heavy infrastructure-as-code rebuilding, massive CI/CD pipeline automation, or hardcore system-level SRE stability implementations are needed for launch, add `agency-devops-automator` or `agency-sre-site-reliability-engineer`.
+- If the task requires brutal extreme-performance testing or heavy system profiling across bottlenecks, add `agency-performance-benchmarker`.
+- Use `agency-agents-orchestrator` as the primary route when the user explicitly requests building autonomous pipelines or managing multi-agent automated orchestration.
 - If local browser validation is required after page work, add one validation skill after the build skill, not before it.
 
 ## Validation Rules
@@ -160,7 +165,6 @@ The `routing_context` section is mandatory for audit-grade traceability. It must
 
 - **Managed skills** (`addy-skills/`, `extra-skills/`): SKILL.md is version-controlled in this repository. Routing and runtime reference the same source.
 - **Platform-native skills**: Provided by the host runtime. This orchestrator references them by name and description only. Do not copy their SKILL.md into this repository — copies create hidden version drift.
-- **Deprecated skills** (`plugins/using-agent-skills-deprecated/`): Must not be routed to under any circumstance.
 - When adding a new skill, determine its provenance category first. Managed skills get a SKILL.md in this repo; platform-native skills get an entry in `skill-inventory.md` only.
 
 ## Maintenance
