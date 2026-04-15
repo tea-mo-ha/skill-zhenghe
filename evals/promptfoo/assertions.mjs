@@ -43,13 +43,14 @@ function extractSkills(block) {
       continue;
     }
 
-    const codeMatch = line.match(/`([^`]+)`/);
-    if (codeMatch) {
-      skills.push(codeMatch[1]);
+    const content = line.slice(1).trim();
+    const leadMatch = content.match(/^(?:`([^`]+)`|([A-Za-z0-9:_-]+))(?=\s*:|$)/);
+    if (leadMatch) {
+      skills.push(leadMatch[1] ?? leadMatch[2]);
       continue;
     }
 
-    let plain = line.slice(1).trim();
+    let plain = content;
     if (plain.includes(":")) {
       plain = plain.split(":", 1)[0].trim();
     }
@@ -83,7 +84,10 @@ export function contractAssert(output, context) {
   const requiredSections = context?.config?.required_sections ?? [
     "chosen_subskills",
     "skill_file_reads",
+    "routing_context",
     "plan",
+    "execution",
+    "validation",
   ];
   const sections = parseSections(output);
   const missing = requiredSections.filter((name) => !sections[name]);

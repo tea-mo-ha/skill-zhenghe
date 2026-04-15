@@ -6,13 +6,13 @@ This inventory distinguishes between **managed skills** (SKILL.md lives in this 
 
 ## Version Governance
 
-- **Managed skills** (`addy-skills/`, `extra-skills/`): Changes flow through this repository's Git history. Orchestrator routing and runtime execution are guaranteed to reference the same SKILL.md.
+- **Managed skills** (`addy-skills/`, `extra-skills/`): This repository is the source of truth. Runtime copies must be refreshed from this repository, preferably via `scripts/sync_managed_skills.py`, before expecting route policy and runtime execution to match exactly.
 - **Platform-native skills**: The host platform (Antigravity / Codex) owns the SKILL.md. This inventory records only the routing description. If the platform updates a native skill's behavior, the orchestrator's routing decisions remain valid because they depend on intent classification, not on the skill's internal implementation.
 - **Rule**: Do not copy platform-native SKILL.md files into this repository. Copies create hidden version drift between routing expectations and runtime execution.
 
 ## Availability Governance
 
-- Managed skills in this repository are always legal routing targets because the runtime can read their local `SKILL.md`.
+- Managed skills are legal routing targets when the current runtime can read the repository-local source or a synced runtime copy derived from it.
 - Platform-native skills are legal routing targets only when the current host runtime actually exposes them in the live skill inventory.
 - An inventory entry is not proof that a platform-native skill is installed or usable in the current environment.
 - If a platform-native skill is unavailable at runtime, the orchestrator must not keep it in `chosen_subskills`; it must fall back or report the capability as unavailable.

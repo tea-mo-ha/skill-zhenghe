@@ -7,6 +7,34 @@ import sys
 import time
 from typing import Any
 
+SAFE_ENV_KEYS = (
+    "PATH",
+    "HOME",
+    "USER",
+    "LOGNAME",
+    "SHELL",
+    "TMPDIR",
+    "TMP",
+    "TEMP",
+    "LANG",
+    "LC_ALL",
+    "LC_CTYPE",
+    "TERM",
+    "COLORTERM",
+    "NO_COLOR",
+    "CLICOLOR",
+    "CLICOLOR_FORCE",
+    "CODEX_HOME",
+    "XDG_CONFIG_HOME",
+    "XDG_CACHE_HOME",
+    "XDG_DATA_HOME",
+    "SSL_CERT_FILE",
+    "SSL_CERT_DIR",
+    "HTTP_PROXY",
+    "HTTPS_PROXY",
+    "NO_PROXY",
+)
+
 
 def _trim(text: str, limit: int = 4000) -> str:
     if len(text) <= limit:
@@ -35,6 +63,22 @@ def _extract_final_agent_message(stdout: str) -> str:
             final_message = str(item["text"]).strip()
 
     return final_message
+
+
+def _build_child_env(overrides: dict[str, str], extra_allowlist: list[str]) -> dict[str, str]:
+    env: dict[str, str] = {}
+    allowed = set(SAFE_ENV_KEYS)
+    allowed.update(str(key) for key in extra_allowlist)
+
+    for key in allowed:
+        value = os.environ.get(key)
+        if value:
+            env[key] = value
+
+    for key, value in overrides.items():
+        env[str(key)] = str(value)
+
+    return env
 
 
 def _run_codex_once(
@@ -89,6 +133,8 @@ def call_api(prompt: str, options: dict[str, Any] | None, context: dict[str, Any
     search = bool(config.get("search", False))
     disable_features = list(config.get("disable_features", ["plugins"]))
     add_dirs = list(config.get("add_dirs", []))
+    sandbox_mode = str(config.get("sandbox_mode", "read-only"))
+    extra_env_allowlist = list(config.get("env_allowlist", []))
     env_overrides = dict(config.get("env", {}))
 
     cmd = [
@@ -97,7 +143,7 @@ def call_api(prompt: str, options: dict[str, Any] | None, context: dict[str, Any
         "--cd",
         repo_root,
         "--sandbox",
-        "workspace-write",
+        sandbox_mode,
         "--skip-git-repo-check",
         "--ephemeral",
         "--color",
@@ -119,9 +165,7 @@ def call_api(prompt: str, options: dict[str, Any] | None, context: dict[str, Any
 
     cmd.extend(["--json", prompt])
 
-    env = os.environ.copy()
-    for key, value in env_overrides.items():
-        env[str(key)] = str(value)
+    env = _build_child_env(env_overrides, extra_env_allowlist)
 
     last_result: dict[str, Any] | None = None
 

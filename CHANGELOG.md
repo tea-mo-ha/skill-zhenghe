@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **promptfoo provider hardening**: Switched the live Codex eval provider to a read-only sandbox and an allowlisted child environment so routing regressions no longer run with write access or inherit the full parent shell.
+- **Regression contract coverage**: The promptfoo suite now requires `routing_context`, `execution`, and `validation`, matching the orchestrator's published execution protocol instead of only checking the early routing fields.
+- **Deployment governance**: Managed skills are now documented as source-of-truth artifacts that should be refreshed into runtime copies with the sync script, instead of implying that copied runtimes stay automatically in lockstep.
+
+### Added
+
+- **sync_managed_skills.py**: Added a repeatable runtime sync script for refreshing managed skills into Antigravity and Codex runtime directories without manually copying folders.
+- **Regression parser hardening**: Updated the JS assertions so skill extraction reads the selected skill token itself, not arbitrary backticked text embedded later in the rationale.
+
 - **skill-suite-orchestrator**: Restored a hard execution rule that every selected downstream skill must have its real `SKILL.md` read before execution. Removed the bypass wording that let "straightforward" skills skip file reads.
 - **Platform-native routing**: Added an explicit availability gate so `agency-*` and other platform-native skills are only legal route targets when the live runtime actually exposes them.
 - **README contract**: Updated the public output contract to include `skill_file_reads` and `routing_context`, matching the orchestrator's real audit trace.
