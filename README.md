@@ -13,7 +13,8 @@
 它不是把所有 skill 拼成一个大提示词，而是一个 **认知调度层**：
 
 - 只从真实存在的子 skill 目录中选取最小必要集
-- 先输出 `chosen_subskills`，再进入 `plan → execution → validation`
+- 对关键场景先做声明式归一化，再输出最终 `chosen_subskills`
+- 先输出 `chosen_subskills`，再进入 `skill_file_reads → routing_context → plan → execution → validation`
 - 默认坚持 **最小必要集**，避免全量激活
 - 不允许虚构 skill、不允许把子 skill 原文拼接成单一 prompt
 
@@ -73,6 +74,14 @@ Codex 通过 `.codex/AGENTS.md` 仓库级策略文件来读取配置。该文件
 chosen_subskills
 - skill-name: 选择理由
 
+skill_file_reads
+- /absolute/path/to/child-skill/SKILL.md
+
+routing_context
+- dominant_scenario: 命中的场景
+- rejected_alternatives: 评估过但未选择的 skill 与原因
+- constraint_checks: 这次实际执行过的白名单、互斥、可用性约束
+
 plan
 - ...
 
@@ -82,6 +91,22 @@ execution
 validation
 - ...
 ```
+
+## 回归验证
+
+仓库内置了最小 `promptfoo` 路由回归配置，用来验证 orchestrator 至少不会在关键场景里回退到明显错误的路由：
+
+```bash
+npx promptfoo@latest eval --no-cache -c evals/promptfoo/orchestrator-routing.promptfoo.yaml
+```
+
+这套回归会通过本地 `codex exec` 真实调用当前仓库的 orchestrator，并校验：
+
+- 是否先输出 `chosen_subskills`
+- 是否输出 `skill_file_reads`
+- 是否错误包含 `skill-suite-orchestrator`
+- 页面生成是否逃逸到外部前端 plugin skill
+- 调试场景是否错误同时启用两套调试协议
 
 ## 目录说明
 
@@ -103,6 +128,7 @@ skill-zhenghe/
 ## 路由维护
 
 - **技能清单** → [`skill-suite-orchestrator/references/skill-inventory.md`](skill-suite-orchestrator/references/skill-inventory.md)
+- **声明式路由归一化** → [`skill-suite-orchestrator/references/route-profiles.yaml`](skill-suite-orchestrator/references/route-profiles.yaml)
 - **场景路由** → [`skill-suite-orchestrator/references/routing-matrix.md`](skill-suite-orchestrator/references/routing-matrix.md)
 - **总控协议** → [`skill-suite-orchestrator/SKILL.md`](skill-suite-orchestrator/SKILL.md)
 - **版本变更** → [`CHANGELOG.md`](CHANGELOG.md)
@@ -118,4 +144,3 @@ skill-zhenghe/
 ## License
 
 MIT
-

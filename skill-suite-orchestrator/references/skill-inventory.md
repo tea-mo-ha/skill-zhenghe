@@ -10,6 +10,13 @@ This inventory distinguishes between **managed skills** (SKILL.md lives in this 
 - **Platform-native skills**: The host platform (Antigravity / Codex) owns the SKILL.md. This inventory records only the routing description. If the platform updates a native skill's behavior, the orchestrator's routing decisions remain valid because they depend on intent classification, not on the skill's internal implementation.
 - **Rule**: Do not copy platform-native SKILL.md files into this repository. Copies create hidden version drift between routing expectations and runtime execution.
 
+## Availability Governance
+
+- Managed skills in this repository are always legal routing targets because the runtime can read their local `SKILL.md`.
+- Platform-native skills are legal routing targets only when the current host runtime actually exposes them in the live skill inventory.
+- An inventory entry is not proof that a platform-native skill is installed or usable in the current environment.
+- If a platform-native skill is unavailable at runtime, the orchestrator must not keep it in `chosen_subskills`; it must fall back or report the capability as unavailable.
+
 ---
 
 ## Managed: addy-skills

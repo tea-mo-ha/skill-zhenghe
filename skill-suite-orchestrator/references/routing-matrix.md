@@ -1,10 +1,12 @@
 # Routing Matrix
 
-> Version: 1.1.0 | Updated: 2026-04-14 | Source of truth for intent → skill mapping.
+> Version: 1.2.0 | Updated: 2026-04-16 | Human-readable intent → skill mapping. Final governed-route normalization lives in `route-profiles.yaml`.
 
 Use this matrix to turn user intent into the smallest sufficient subskill set. Always choose one dominant scenario first, then add only the directly relevant helpers.
 
 **Skill provenance**: This matrix routes to both **managed skills** (version-controlled in this repo under `addy-skills/` and `extra-skills/`) and **platform-native skills** (provided by the host runtime). See `skill-inventory.md` for the authoritative source list and version governance rules.
+
+**Normalization source**: For governed scenarios such as architecture analysis, page generation, and debugging repair, normalize the final `chosen_subskills` set against `route-profiles.yaml` before output. This matrix explains the intent model; `route-profiles.yaml` defines the final required / optional / forbidden / mutually-exclusive shape.
 
 ## Global Rules
 
@@ -15,6 +17,8 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 - Hard ceiling: avoid more than 4 skills unless the user explicitly asks for an end-to-end, cross-phase workflow.
 - Never include `skill-suite-orchestrator` itself in `chosen_subskills`; list only delegated downstream skills.
 - Never include `skill-suite-orchestrator` itself in `chosen_subskills` in any scenario, without exception.
+- Platform-native skills are conditional candidates only. Select them only when the current runtime confirms they are actually available.
+- If a platform-native skill is unavailable at runtime, do not keep it in `chosen_subskills`; fall back to the nearest managed route or report the capability as unavailable.
 - Never enable all browser skills together.
 - Never enable all debugging skills together.
 - Never pull in `senior-fullstack` by default.
@@ -32,9 +36,9 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 **Add only when needed**
 
 - `security-and-hardening`: 涉及基础鉴权、用户输入、密钥、常规外部服务和存储安全验证。
-- `agency-security-engineer`: 涉及最高安全红线审查、深层威胁建模分析、系统核心资产权限隔离时，全面接管防御。
+- `agency-security-engineer`: 涉及最高安全红线审查、深层威胁建模分析、系统核心资产权限隔离时，且当前运行时确认可用，才全面接管防御。
 - `performance-optimization`: 涉及常见加载速度、Core Web Vitals、慢查询、常见N+1等常规渲染性能。
-- `agency-performance-benchmarker`: 怀疑存在深层性能雪崩隐患、复杂并发卡死、或需要全盘接管极限压测验证架构时。
+- `agency-performance-benchmarker`: 怀疑存在深层性能雪崩隐患、复杂并发卡死、或需要全盘接管极限压测验证架构时，且当前运行时确认可用。
 - `documentation-and-adrs`: 审核结果需要沉淀为 ADR、评审纪要、风险清单。
 - `systematic-debugging` or `debugging-and-error-recovery`: 审核中已发现正在发生的错误，需要从 review 切到诊断。
 
@@ -49,14 +53,17 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 **Primary route selection**
 
 - 默认必须委派 -> `spec-driven-development` → `api-and-interface-design` → `planning-and-task-breakdown`
+- 该场景的最终归一化规则由 `route-profiles.yaml::architecture_analysis` 定义
+- “最小架构路由验证”“dry run”“只给简短 plan”“先做一个短版架构判断” 仍然归到同一条强制链路
+- 即使用户只要简短输出，也不要因为输出更短而省掉 `planning-and-task-breakdown`
 - 除非仓库中明显不存在可分析的规格、接口或设计边界，否则不要跳过前两个。
 - 只有需求明显模糊、目标不成形、边界不清时，才在最前面加 `idea-refine` 或 `brainstorming`
 
 **Add only when needed**
 
 - `source-driven-development`: 方案强依赖框架或官方最佳实践。
-- `agency-software-architect`: 遇到全局系统级领域建模（DDD）、极度复杂的跨域混合系统整合设计时的高维决策。
-- `agency-backend-architect`: 面临高吞吐量的核心后端重构、大型微服务体系结构拆分或数据库大并发核心建模工作时。
+- `agency-software-architect`: 遇到全局系统级领域建模（DDD）、极度复杂的跨域混合系统整合设计时，且当前运行时确认可用。
+- `agency-backend-architect`: 面临高吞吐量的核心后端重构、大型微服务体系结构拆分或数据库大并发核心建模工作时，且当前运行时确认可用。
 - `documentation-and-adrs`: 需要沉淀架构决策。
 - `planning-with-files-zh`: 任务很长、跨会话、跨阶段，需要持久化计划。
 - `mcp-builder`: 目标本身就是 MCP server 或工具协议层。
@@ -65,6 +72,8 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 **Intent -> chosen_subskills**
 
 - “分析这个架构” -> `spec-driven-development`, `api-and-interface-design`, `planning-and-task-breakdown`
+- “做最小架构路由验证” -> `spec-driven-development`, `api-and-interface-design`, `planning-and-task-breakdown`
+- “先给简短 plan 的架构分析” -> `spec-driven-development`, `api-and-interface-design`, `planning-and-task-breakdown`
 - “帮我把这个想法收成可执行架构” -> `idea-refine`, `spec-driven-development`, `api-and-interface-design`, `planning-and-task-breakdown`
 - “给这个方案拆任务” -> `spec-driven-development`, `api-and-interface-design`, `planning-and-task-breakdown`
 
@@ -150,8 +159,8 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 **Add only when needed**
 
 - `ci-cd-and-automation`: 需要改常规流水线、简单部署脚本、常规阶段的自动化门禁。
-- `agency-devops-automator`: 需要对整个部署管线基建、云资源全自动化配置做重构转型，或打造最高标准 CI/CD Pipeline 时。
-- `agency-sre-site-reliability-engineer`: 上线涉及最核心链路 SLO 以及熔断保护、需要设计极高可用性、强抗灾能力的维稳架构时。
+- `agency-devops-automator`: 需要对整个部署管线基建、云资源全自动化配置做重构转型，或打造最高标准 CI/CD Pipeline 时，且当前运行时确认可用。
+- `agency-sre-site-reliability-engineer`: 上线涉及最核心链路 SLO 以及熔断保护、需要设计极高可用性、强抗灾能力的维稳架构时，且当前运行时确认可用。
 - `git-workflow-and-versioning`: 需要整理分支、提交、发版或版本控制动作。
 - `deprecation-and-migration`: 上线伴随旧路径下线、灰度迁移或替换策略。
 - `documentation-and-adrs`: 需要补上线说明、运维说明、ADR 或变更记录。
@@ -197,6 +206,7 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 **Intent -> chosen_subskills**
 
 - “帮我构建或重构这套管线系统的全自动流” -> `agency-agents-orchestrator`
+- 如果 `agency-agents-orchestrator` 在当前运行时不可用，改走 `planning-with-files-zh` 或 `planning-and-task-breakdown` 做受限降级，并明确告知“自动化主路由当前不可用”。
 
 ## Anti-Patterns
 

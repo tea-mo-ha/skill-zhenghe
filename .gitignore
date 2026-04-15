@@ -1,2 +1,3 @@
 plugins/claude-mem
 **/.DS_Store
+.promptfoo/

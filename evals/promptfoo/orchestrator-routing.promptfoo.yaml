@@ -1,0 +1,114 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: Skill Suite Orchestrator routing regression suite
+prompts:
+  - "{{task_prompt}}"
+providers:
+  - id: file://./provider_codex.py
+    label: codex-live
+    config:
+      repo_root: /Users/mo/Documents/skill-zhenghe
+      timeout_sec: 90
+      max_attempts: 2
+      model: gpt-5.4-mini
+      model_reasoning_effort: low
+      disable_features:
+        - plugins
+tests:
+  - description: architecture route uses the forced local analysis chain
+    vars:
+      task_prompt: "使用 skill-suite-orchestrator 对这个项目做最小架构路由验证。先输出 chosen_subskills，再输出 skill_file_reads，再给出不超过 3 条的简短 plan；不要展开详细分析。"
+    assert:
+      - type: javascript
+        value: file://./assertions.mjs:contractAssert
+        config:
+          required_sections:
+            - chosen_subskills
+            - skill_file_reads
+            - plan
+      - type: javascript
+        value: file://./assertions.mjs:expectedSkillSetAssert
+        config:
+          expected_skills:
+            - spec-driven-development
+            - api-and-interface-design
+            - planning-and-task-breakdown
+          exact_order: true
+      - type: javascript
+        value: file://./assertions.mjs:noDisallowedSkillsAssert
+        config:
+          disallowed_skills:
+            - skill-suite-orchestrator
+      - type: javascript
+        value: file://./assertions.mjs:skillFileReadsCoverSelectedAssert
+        config:
+          managed_skills:
+            - spec-driven-development
+            - api-and-interface-design
+            - planning-and-task-breakdown
+      - type: javascript
+        value: file://./assertions.mjs:skillFileReadsOnlyChildSkillsAssert
+
+  - description: page generation stays on local frontend routes
+    vars:
+      task_prompt: "使用 skill-suite-orchestrator 对这个项目做最小页面生成路由验证。先输出 chosen_subskills，再输出 skill_file_reads，再给出不超过 3 条的简短 plan；不要展开详细实现建议。"
+    assert:
+      - type: javascript
+        value: file://./assertions.mjs:contractAssert
+        config:
+          required_sections:
+            - chosen_subskills
+            - skill_file_reads
+            - plan
+      - type: javascript
+        value: file://./assertions.mjs:expectedAnySkillAssert
+        config:
+          expected_any_skills:
+            - frontend-design
+            - frontend-ui-engineering
+      - type: javascript
+        value: file://./assertions.mjs:noDisallowedSkillsAssert
+        config:
+          disallowed_skills:
+            - skill-suite-orchestrator
+            - build-web-apps:frontend-skill
+            - build-web-apps:react-best-practices
+      - type: javascript
+        value: file://./assertions.mjs:skillFileReadsCoverSelectedAssert
+        config:
+          managed_skills:
+            - frontend-design
+            - frontend-ui-engineering
+            - api-and-interface-design
+      - type: javascript
+        value: file://./assertions.mjs:skillFileReadsOnlyChildSkillsAssert
+
+  - description: debugging route keeps the two debug protocols mutually exclusive
+    vars:
+      task_prompt: "使用 skill-suite-orchestrator 对这个报错做最小调试路由验证：TypeError: Cannot read properties of undefined (reading 'map')。先输出 chosen_subskills，再输出 skill_file_reads，再给出不超过 3 条的简短 plan；不要展开详细修复。"
+    assert:
+      - type: javascript
+        value: file://./assertions.mjs:contractAssert
+        config:
+          required_sections:
+            - chosen_subskills
+            - skill_file_reads
+            - plan
+      - type: javascript
+        value: file://./assertions.mjs:expectedAnySkillAssert
+        config:
+          expected_any_skills:
+            - debugging-and-error-recovery
+            - systematic-debugging
+      - type: javascript
+        value: file://./assertions.mjs:mutuallyExclusiveSkillsAssert
+        config:
+          mutually_exclusive_groups:
+            - - debugging-and-error-recovery
+              - systematic-debugging
+      - type: javascript
+        value: file://./assertions.mjs:noDisallowedSkillsAssert
+        config:
+          disallowed_skills:
+            - skill-suite-orchestrator
+      - type: javascript
+        value: file://./assertions.mjs:skillFileReadsOnlyChildSkillsAssert
