@@ -34,7 +34,7 @@
 
 ### Antigravity（反重力）
 
-推荐使用仓库内置同步脚本把 managed skills 复制到 Antigravity 运行时路径：
+推荐使用仓库内置发布脚本把 managed skills 发布到 Antigravity 运行时路径：
 
 ```bash
 python3 scripts/sync_managed_skills.py --targets antigravity
@@ -64,7 +64,7 @@ Codex 同时依赖两层：
 - 仓库级策略：`.codex/AGENTS.md`
 - 自定义 skill 目录：`~/.agents/skills/`
 
-推荐同样使用同步脚本刷新 Codex 侧的 managed skills：
+推荐同样使用发布脚本刷新 Codex 侧的 managed skills：
 
 ```bash
 python3 scripts/sync_managed_skills.py --targets codex
@@ -77,6 +77,24 @@ python3 scripts/sync_managed_skills.py
 ```
 
 这样做的好处是：仓库继续作为唯一源头，运行时继续使用扁平化 copy 部署，同时避免手工复制后的长期漂移。
+
+当前脚本的发布语义是：
+
+- 先构建完整 release，再开始 cutover
+- 每个 skill 通过 `*.staging -> live` 的原子 rename 发布
+- 保留 release 快照和上一个 live 版本，便于 rollback
+- 如果进程在单个 skill 切换中断，下次运行会优先恢复中断事务
+
+回滚到已发布 release：
+
+```bash
+python3 scripts/sync_managed_skills.py --targets codex --rollback-release <release_id>
+```
+
+约束说明：
+
+- 由于宿主运行时要求 `~/.agents/skills/<skill-name>` 这类扁平目录，当前实现能做到的是“完整 release 先构建 + 单个 skill 原子切换 + 可恢复发布”
+- 它还不是“整个 managed skill 集一次 filesystem operation 全量切换”，如果未来要做到这一点，需要额外的版本指针层
 
 ## 怎么使用
 
@@ -157,7 +175,7 @@ skill-zhenghe/
 - **场景路由** → [`skill-suite-orchestrator/references/routing-matrix.md`](skill-suite-orchestrator/references/routing-matrix.md)
 - **总控协议** → [`skill-suite-orchestrator/SKILL.md`](skill-suite-orchestrator/SKILL.md)
 - **版本变更** → [`CHANGELOG.md`](CHANGELOG.md)
-- **运行时同步** → [`scripts/sync_managed_skills.py`](scripts/sync_managed_skills.py)
+- **运行时发布 / 回滚** → [`scripts/sync_managed_skills.py`](scripts/sync_managed_skills.py)
 
 ## 默认边界
 
