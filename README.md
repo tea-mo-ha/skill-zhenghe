@@ -28,6 +28,7 @@
 | 🐞 **调试修复** | `systematic-debugging` / `debugging-and-error-recovery` | 根因定位与修复 |
 | 🌐 **浏览器验证** | `webapp-testing` / `agent-browser` | 本地 Web 应用自动化测试 |
 | 🚀 **交付上线** | `shipping-and-launch` | 发布前检查清单与部署 |
+| 🧩 **Skill 管理** | `managed-skill-creator` | 新增或更新 managed skill，并同步路由与回归 |
 | 📋 **文件规划** | `planning-with-files-zh` | 基于文件的中文任务规划 |
 
 ## 怎么接入
@@ -107,6 +108,9 @@ python3 scripts/sync_managed_skills.py --targets codex --rollback-release <relea
 "调试这个报错"
 "帮我做一次浏览器回归验证"
 "准备上线，跑一遍检查清单"
+"帮我给这个仓库新增一个 managed skill"
+"帮我创建或更新本地 skill"
+"帮我创建一个本地 skill，用来整理 review 规则"
 ```
 
 **输出契约：**
@@ -147,6 +151,7 @@ npx promptfoo@latest eval --no-cache -c evals/promptfoo/orchestrator-routing.pro
 - 是否输出 `skill_file_reads`
 - 是否输出 `routing_context`、`execution`、`validation`
 - 是否错误包含 `skill-suite-orchestrator`
+- skill 管理是否优先走本地 `managed-skill-creator`
 - 页面生成是否逃逸到外部前端 plugin skill
 - 调试场景是否错误同时启用两套调试协议
 
@@ -158,7 +163,7 @@ skill-zhenghe/
 │   ├── SKILL.md                # 总控协议 + 审计跟踪契约
 │   ├── references/             # 路由矩阵 & 技能清单
 │   └── agents/                 # 代理配置
-├── addy-skills/                # 工程流程类基础 skill（20 个，managed）
+├── addy-skills/                # 工程流程类基础 skill（21 个，managed，含 SKILL.md）
 ├── extra-skills/               # 页面设计、浏览器自动化等补充 skill（3 个，managed）
 ├── scripts/                    # 运行时同步脚本
 ├── plugins/                    # 不纳入默认路由的插件 & deprecated skills

@@ -1,6 +1,6 @@
 # Skill Inventory
 
-> Authoritative catalog for orchestrator routing. Updated: 2026-04-14.
+> Authoritative catalog for orchestrator routing. Updated: 2026-04-17.
 
 This inventory distinguishes between **managed skills** (SKILL.md lives in this repo, version-controlled by us) and **platform-native skills** (provided by the host runtime, referenced for routing but not version-managed here).
 
@@ -21,7 +21,7 @@ This inventory distinguishes between **managed skills** (SKILL.md lives in this 
 
 ## Managed: addy-skills
 
-> Source: `addy-skills/` — 20 skills, fully managed.
+> Source: `addy-skills/` — 21 skills, fully managed (`SKILL.md`-backed).
 
 | Skill | 用途 |
 | --- | --- |
@@ -38,6 +38,7 @@ This inventory distinguishes between **managed skills** (SKILL.md lives in this 
 | `git-workflow-and-versioning` | 处理分支、提交、冲突、版本化和变更组织。 |
 | `idea-refine` | 把模糊想法收敛成更清晰的目标、方向和约束。 |
 | `incremental-implementation` | 把较大的实现拆成渐进式、可验证的小切片。 |
+| `managed-skill-creator` | 新增或更新本仓库的 managed skill，并同步 inventory、路由、文档与回归。 |
 | `performance-optimization` | 做性能分析、瓶颈定位和优化。 |
 | `planning-and-task-breakdown` | 在需求已较清晰时拆任务、排序依赖、写验收标准。 |
 | `security-and-hardening` | 处理输入校验、鉴权、密钥、依赖风险和硬化。 |

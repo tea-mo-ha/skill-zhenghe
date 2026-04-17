@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from typing import Any
 
@@ -34,6 +36,13 @@ SAFE_ENV_KEYS = (
     "HTTPS_PROXY",
     "NO_PROXY",
 )
+
+ROUTING_EVAL_PREAMBLE = """Routing-only regression check for skill-suite-orchestrator.
+Do not edit files, create skills, apply patches, or make any repository changes.
+Output only the requested sections.
+In `chosen_subskills`, list only delegated child skills and never include `skill-suite-orchestrator`.
+In `skill_file_reads`, list only child `SKILL.md` files that were actually read, and never include `skill-suite-orchestrator` or non-child files.
+"""
 
 
 def _trim(text: str, limit: int = 4000) -> str:
@@ -81,6 +90,36 @@ def _build_child_env(overrides: dict[str, str], extra_allowlist: list[str]) -> d
     return env
 
 
+def _codex_home_source(env: dict[str, str]) -> str:
+    codex_home = env.get("CODEX_HOME")
+    if codex_home:
+        return codex_home
+    home = env.get("HOME") or os.path.expanduser("~")
+    return os.path.join(home, ".codex")
+
+
+def _copy_if_exists(source: str, destination: str) -> None:
+    if not os.path.exists(source):
+        return
+    if os.path.isdir(source):
+        shutil.copytree(source, destination)
+        return
+    shutil.copy2(source, destination)
+
+
+def _prepare_isolated_codex_home(env: dict[str, str]) -> str:
+    source_root = _codex_home_source(env)
+    isolated_root = tempfile.mkdtemp(prefix="promptfoo-codex-home-")
+
+    for name in ("auth.json", "config.toml", "installation_id", "version.json", "AGENTS.md"):
+        _copy_if_exists(os.path.join(source_root, name), os.path.join(isolated_root, name))
+
+    for name in ("skills", "plugins", "rules"):
+        _copy_if_exists(os.path.join(source_root, name), os.path.join(isolated_root, name))
+
+    return isolated_root
+
+
 def _run_codex_once(
     cmd: list[str],
     *,
@@ -122,6 +161,7 @@ def _run_codex_once(
 def call_api(prompt: str, options: dict[str, Any] | None, context: dict[str, Any] | None) -> dict[str, Any]:
     options = options or {}
     config = options.get("config", {})
+    prompt = f"{ROUTING_EVAL_PREAMBLE}\n\n{prompt}"
 
     repo_root = config.get("repo_root", os.getcwd())
     timeout_sec = int(config.get("timeout_sec", 240))
@@ -136,6 +176,7 @@ def call_api(prompt: str, options: dict[str, Any] | None, context: dict[str, Any
     sandbox_mode = str(config.get("sandbox_mode", "read-only"))
     extra_env_allowlist = list(config.get("env_allowlist", []))
     env_overrides = dict(config.get("env", {}))
+    isolate_codex_home = bool(config.get("isolate_codex_home", False))
 
     cmd = [
         codex_bin,
@@ -166,50 +207,70 @@ def call_api(prompt: str, options: dict[str, Any] | None, context: dict[str, Any
     cmd.extend(["--json", prompt])
 
     env = _build_child_env(env_overrides, extra_env_allowlist)
+    isolated_codex_home: str | None = None
 
-    last_result: dict[str, Any] | None = None
+    if isolate_codex_home:
+        isolated_codex_home = _prepare_isolated_codex_home(env)
+        env["CODEX_HOME"] = isolated_codex_home
+        env["XDG_CACHE_HOME"] = os.path.join(isolated_codex_home, "xdg-cache")
+        env["XDG_CONFIG_HOME"] = os.path.join(isolated_codex_home, "xdg-config")
+        env["XDG_DATA_HOME"] = os.path.join(isolated_codex_home, "xdg-data")
 
-    for attempt in range(1, max_attempts + 1):
-        try:
-            result = _run_codex_once(
-                cmd,
-                repo_root=repo_root,
-                env=env,
-                timeout_sec=timeout_sec,
-            )
-            result.setdefault("metadata", {})
-            result["metadata"]["attempt"] = attempt
+        for key in ("XDG_CACHE_HOME", "XDG_CONFIG_HOME", "XDG_DATA_HOME"):
+            os.makedirs(env[key], exist_ok=True)
 
-            if result.get("output"):
-                return result
+    try:
+        last_result: dict[str, Any] | None = None
 
-            last_result = result
-        except subprocess.TimeoutExpired as exc:
-            partial_stdout = (exc.stdout or "") if isinstance(exc.stdout, str) else ""
-            partial_stderr = (exc.stderr or "") if isinstance(exc.stderr, str) else ""
-            partial_output = _extract_final_agent_message(partial_stdout)
-            last_result = {
-                "output": partial_output,
-                "error": f"codex exec timed out after {timeout_sec}s",
-                "metadata": {
-                    "stdout": _trim(partial_stdout),
-                    "stderr": _trim(partial_stderr),
-                    "command": cmd,
-                    "attempt": attempt,
-                },
-            }
+        for attempt in range(1, max_attempts + 1):
+            try:
+                result = _run_codex_once(
+                    cmd,
+                    repo_root=repo_root,
+                    env=env,
+                    timeout_sec=timeout_sec,
+                )
+                result.setdefault("metadata", {})
+                result["metadata"]["attempt"] = attempt
+                if isolated_codex_home:
+                    result["metadata"]["isolatedCodexHome"] = isolated_codex_home
 
-        if attempt < max_attempts:
-            time.sleep(2)
+                if result.get("output"):
+                    return result
 
-    return last_result or {
-        "output": "",
-        "error": "codex exec failed without producing output",
-        "metadata": {
-            "command": cmd,
-            "attempt": max_attempts,
-        },
-    }
+                last_result = result
+            except subprocess.TimeoutExpired as exc:
+                partial_stdout = (exc.stdout or "") if isinstance(exc.stdout, str) else ""
+                partial_stderr = (exc.stderr or "") if isinstance(exc.stderr, str) else ""
+                partial_output = _extract_final_agent_message(partial_stdout)
+                last_result = {
+                    "output": partial_output,
+                    "error": f"codex exec timed out after {timeout_sec}s",
+                    "metadata": {
+                        "stdout": _trim(partial_stdout),
+                        "stderr": _trim(partial_stderr),
+                        "command": cmd,
+                        "attempt": attempt,
+                    },
+                }
+                if isolated_codex_home:
+                    last_result["metadata"]["isolatedCodexHome"] = isolated_codex_home
+
+            if attempt < max_attempts:
+                time.sleep(2)
+
+        return last_result or {
+            "output": "",
+            "error": "codex exec failed without producing output",
+            "metadata": {
+                "command": cmd,
+                "attempt": max_attempts,
+                **({"isolatedCodexHome": isolated_codex_home} if isolated_codex_home else {}),
+            },
+        }
+    finally:
+        if isolated_codex_home:
+            shutil.rmtree(isolated_codex_home, ignore_errors=True)
 
 
 if __name__ == "__main__":

@@ -48,7 +48,13 @@ def managed_sources(root: Path) -> list[Path]:
     sources = [root / "skill-suite-orchestrator"]
     for folder in ("addy-skills", "extra-skills"):
         base = root / folder
-        sources.extend(sorted(path for path in base.iterdir() if path.is_dir()))
+        sources.extend(
+            sorted(
+                path
+                for path in base.iterdir()
+                if path.is_dir() and (path / "SKILL.md").is_file()
+            )
+        )
     return sources
 
 

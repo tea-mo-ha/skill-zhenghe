@@ -1,6 +1,6 @@
 # Routing Matrix
 
-> Version: 1.2.0 | Updated: 2026-04-16 | Human-readable intent → skill mapping. Final governed-route normalization lives in `route-profiles.yaml`.
+> Version: 1.4.0 | Updated: 2026-04-17 | Human-readable intent → skill mapping. Final governed-route normalization lives in `route-profiles.yaml`.
 
 Use this matrix to turn user intent into the smallest sufficient subskill set. Always choose one dominant scenario first, then add only the directly relevant helpers.
 
@@ -179,6 +179,7 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 - 长任务、多阶段、跨会话、需要持久化状态 -> `planning-with-files-zh`
 - 需求清楚但要拆实施任务 -> `planning-and-task-breakdown`
+- 明确要新增或更新本仓库 managed skill -> `managed-skill-creator`
 - 本地 skill 不够或用户想找新能力 -> `find-skills`
 
 **Add only when needed**
@@ -191,6 +192,8 @@ Use this matrix to turn user intent into the smallest sufficient subskill set. A
 
 - “帮我规划这个多步骤项目” -> `planning-with-files-zh`
 - “把这个需求拆成任务” -> `planning-and-task-breakdown`
+- “帮我给这个仓库新增一个 managed skill” -> `managed-skill-creator`
+- “把这个现有 skill 重写并接入默认路由” -> `managed-skill-creator`
 - “试试有没有现成 skill 能做这件事” -> `find-skills`
 
 ## 8. 全自动工作流管线建设

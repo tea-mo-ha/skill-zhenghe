@@ -9,15 +9,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - **sync_managed_skills.py**: Upgraded the runtime sync script into a versioned publisher. Releases are now built before cutover, promoted per skill through resumable staging transactions, and tracked with release manifests instead of one-shot overwrite semantics.
-- **promptfoo provider hardening**: Switched the live Codex eval provider to a read-only sandbox and an allowlisted child environment so routing regressions no longer run with write access or inherit the full parent shell.
+- **promptfoo provider hardening**: Switched the live Codex eval provider to an allowlisted child environment with isolated Codex state while keeping the child run in `workspace-write` sandbox mode so routing probes can execute without touching the user's live Codex state.
 - **Regression contract coverage**: The promptfoo suite now requires `routing_context`, `execution`, and `validation`, matching the orchestrator's published execution protocol instead of only checking the early routing fields.
 - **Deployment governance**: Managed skills are now documented as source-of-truth artifacts that should be refreshed into runtime copies with the sync script, instead of implying that copied runtimes stay automatically in lockstep.
+- **frontend-design**: Tightened the visual accessibility contract so design outputs now explicitly declare contrast, focus visibility, reduced-motion handling, and non-color-only cues.
+- **promptfoo provider runtime isolation**: The live eval provider now runs child `codex exec` calls with an isolated temporary `CODEX_HOME` and `workspace-write` sandboxing so routing regressions can run inside restricted parent environments without writing into the user's live Codex state.
 
 ### Added
 
 - **sync_managed_skills.py**: Added a repeatable runtime sync script for refreshing managed skills into Antigravity and Codex runtime directories without manually copying folders.
 - **Rollback support**: Added `--rollback-release <release_id>` for publishing an earlier managed-skill release back into a runtime target.
 - **Regression parser hardening**: Updated the JS assertions so skill extraction reads the selected skill token itself, not arbitrary backticked text embedded later in the rationale.
+- **managed-skill-creator**: Added a repo-owned managed skill for creating or updating local managed skills without colliding with the platform-native `skill-creator`.
+- **Skill-management routing**: Added inventory, routing, README, and promptfoo coverage for the local managed-skill creation path.
 
 - **skill-suite-orchestrator**: Restored a hard execution rule that every selected downstream skill must have its real `SKILL.md` read before execution. Removed the bypass wording that let "straightforward" skills skip file reads.
 - **Platform-native routing**: Added an explicit availability gate so `agency-*` and other platform-native skills are only legal route targets when the live runtime actually exposes them.

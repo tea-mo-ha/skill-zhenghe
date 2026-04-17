@@ -96,6 +96,7 @@ Never list orchestrator policy files, reference documents, inventories, changelo
 - Before selecting frontend debugging or browser validation skills, confirm that the repository exposes a runnable app or UI surface, or that the user explicitly points to one.
 - For non-app repositories, do not infer frontend bug-fixing or browser validation from vague page, UI, or bug language.
 - Use `planning-with-files-zh` only for long, multi-step, or cross-session work.
+- When the user explicitly wants to create or revise a managed skill in this repository, prefer `managed-skill-creator`; use `find-skills` only for external capability discovery.
 - Use `find-skills` only when local skills are insufficient or the user explicitly asks for capability discovery.
 - Use `context-engineering` when agent output quality degrades, context is stale, or a new session needs grounding before task execution.
 
@@ -109,7 +110,7 @@ Pick the dominant scenario first, then add only conditional helpers:
 - 调试修复: choose exactly one of `systematic-debugging` or `debugging-and-error-recovery` by default; never delegate both in the same default route
 - 浏览器验证: start from exactly one of `webapp-testing`, `browser-testing-with-devtools`, or `agent-browser`
 - 交付上线: start from `shipping-and-launch`
-- 文件规划与辅助技能发现: start from `planning-with-files-zh` or `find-skills`
+- 文件规划与辅助技能发现: start from `planning-with-files-zh`, `planning-and-task-breakdown`, `managed-skill-creator`, or `find-skills`
 - 全自动工作流管线建设: start from `agency-agents-orchestrator`
 
 For the full intent-to-skill mapping, read `references/routing-matrix.md`.
