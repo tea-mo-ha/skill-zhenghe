@@ -23,6 +23,7 @@ scenarios:
         - debugging-and-error-recovery
     normalization_notes:
       - Start with code-review-and-quality alone; add helpers only when the user explicitly requests security, performance, or documentation scope.
+      - Never substitute planning-and-task-breakdown for project review, including routing-only validation prompts.
       - Use agency-security-engineer or agency-performance-benchmarker only for deep-dive audits and only when confirmed available at runtime.
 
   architecture_analysis:
@@ -42,6 +43,7 @@ scenarios:
     normalization_notes:
       - Treat minimal route validation, dry runs, brief-plan requests, and short architecture summaries as architecture_analysis.
       - Never omit planning-and-task-breakdown just because the user asked for a short answer or only a concise plan.
+      - Never select planning-and-task-breakdown alone; the required spec -> interface -> planning chain is indivisible for architecture_analysis.
       - Only skip the required chain when the repository clearly lacks any spec, interface, or design surface to analyze.
 
   page_generation:
@@ -137,11 +139,13 @@ scenarios:
       - context-engineering
     forbidden:
       - skill-suite-orchestrator
+      - skill-creator
     mutually_exclusive: []
     normalization_notes:
       - Use planning-with-files-zh for long, multi-step, or cross-session work.
       - Use planning-and-task-breakdown when requirements are clear and need task decomposition.
       - Use managed-skill-creator when the user wants to add or update a repo-managed skill.
+      - Do not combine managed-skill-creator with platform-native skill-creator for repo-managed skill work.
       - Use find-skills only for external capability discovery.
 
   autonomous_pipeline:

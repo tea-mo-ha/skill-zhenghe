@@ -14,7 +14,7 @@
 
 - 只从真实存在的子 skill 目录中选取最小必要集
 - 对关键场景先做声明式归一化，再输出最终 `chosen_subskills`
-- 先输出 `chosen_subskills`，再进入 `skill_file_reads → routing_context → plan → execution → validation`
+- 先输出 `chosen_subskills`，再进入 `routing_context → plan → skill_file_reads → execution → validation → telemetry`
 - 默认坚持 **最小必要集**，避免全量激活
 - 不允许虚构 skill、不允许把子 skill 原文拼接成单一 prompt
 
@@ -135,6 +135,9 @@ execution
 
 validation
 - ...
+
+telemetry
+- ...
 ```
 
 ## 回归验证
@@ -149,7 +152,7 @@ npx promptfoo@latest eval --no-cache -c evals/promptfoo/orchestrator-routing.pro
 
 - 是否先输出 `chosen_subskills`
 - 是否输出 `skill_file_reads`
-- 是否输出 `routing_context`、`execution`、`validation`
+- 是否输出 `routing_context`、`execution`、`validation`、`telemetry`
 - 是否错误包含 `skill-suite-orchestrator`
 - skill 管理是否优先走本地 `managed-skill-creator`
 - 页面生成是否逃逸到外部前端 plugin skill

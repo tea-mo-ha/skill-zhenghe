@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **skill-suite-orchestrator telemetry contract**: Made `telemetry` mandatory in the primary operating sequence and response skeleton so live routing evals do not omit it before reaching the stricter audit trace section.
+- **Browser route mutual exclusion**: Clarified that browser validation must keep exactly one browser skill in the final route, even when the selected browser path fails and records a structured validation event.
+- **Routing-only normalization hardening**: Clarified that page-generation and debugging route-validation prompts still require their scenario-specific downstream skill, and that the two debugging routes are mutually exclusive primary routes rather than composable helpers.
+- **Shipping route hardening**: Clarified that shipping/launch route validation must select `shipping-and-launch` and must not substitute the planning route for concise-plan prompts.
+- **Architecture route hardening**: Clarified that the governed architecture route must keep the full `spec-driven-development` → `api-and-interface-design` → `planning-and-task-breakdown` chain and must not collapse to planning alone.
+- **Fast-path boundary hardening**: Clarified that explicit route-validation prompts and requests for routing trace sections must not use the trivial fast-path bypass.
+- **Fast-path output hardening**: Clarified that trivial factual answers must not emit empty routing section placeholders such as `chosen_subskills: []`.
+- **Managed skill route hardening**: Clarified that repo-managed skill creation must use `managed-skill-creator` without adding the platform-native `skill-creator`.
+- **Project review route hardening**: Clarified that project review route validation must select `code-review-and-quality` and must not substitute the planning route for concise routing traces.
 - **Reviewer risk routing**: Reviewer activation is now driven by an automatic risk profile for security, auth, secrets, payment, deployment, production, rollback, destructive, and migration-sensitive tasks, while retaining explicit config overrides.
 - **Phase 3 reviewer gate**: Added a structured reviewer contract and optional second-stage reviewer pass so high-risk tasks can be independently approved or rejected with machine-readable JSON instead of free-form markdown.
 - **Phase 3 runtime control layer**: Extracted failure normalization, validation-missing detection, retry/circuit-break policy, and telemetry artifact writing into a reusable `evals/promptfoo/runtime_control.py` module instead of leaving the control logic inline in the promptfoo provider.

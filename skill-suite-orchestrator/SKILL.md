@@ -24,7 +24,9 @@ This is an absolute rule in every scenario, including page generation.
 
 ## Required Operating Contract
 
-**⚡ FAST-PATH (Trivial Task Bypass):** If the user's request is purely investigatory, trivial, or atomic (e.g., "fix this typo", "explain this function", "rename this variable", "run this command", "what does this file do?"), DO NOT invoke any downstream skills. DO NOT output `chosen_subskills` or `routing_context`. Just answer the question or execute the simple instruction directly and stop.
+**⚡ FAST-PATH (Trivial Task Bypass):** If the user's request is purely investigatory, trivial, or atomic (e.g., "fix this typo", "explain this function", "rename this variable", "run this command", "what does this file do?", "what license is this repo?"), DO NOT invoke any downstream skills. DO NOT output `chosen_subskills`, `routing_context`, `skill_file_reads`, `plan`, `execution`, `validation`, or `telemetry`. Do not output empty placeholders such as `chosen_subskills: []`. Just answer the question or execute the simple instruction directly and stop.
+
+Fast-path is forbidden when the user explicitly asks for `chosen_subskills`, `routing_context`, `skill_file_reads`, route validation, minimal route verification, or any of the 8 scenario entry points below. Those requests must run the normal routing contract and choose the scenario-specific downstream skill set even when the requested output is brief or read-only.
 
 For all other complex, multi-step, or architectural tasks, you MUST follow this sequence:
 
@@ -38,6 +40,7 @@ For all other complex, multi-step, or architectural tasks, you MUST follow this 
 8. Output `skill_file_reads` as a ledger of the reads.
 9. Perform `execution` following the strict child skill instructions you just read.
 10. Finish with `validation`.
+11. Finish with `telemetry`.
 
 Execution context requirements:
 
@@ -74,12 +77,17 @@ execution
 
 validation
 - ...
+
+telemetry
+- ...
 ```
 
 In `chosen_subskills`, list only delegated downstream skills.
 Never list `skill-suite-orchestrator`.
 In `skill_file_reads`, list only the real child `SKILL.md` files that were actually read for this run.
 Never list orchestrator policy files, reference documents, inventories, changelogs, or any non-child file in `skill_file_reads`.
+Never write `- none`, `- []`, or ``- `[]` `` in `skill_file_reads`; if no child skill is selected in a valid fast-path response, use an empty inline list such as `skill_file_reads: []` or omit the section when the fast-path contract permits.
+The `telemetry` section is mandatory for every non-fast-path execution. If no concrete validation tool ran, telemetry must report `validation_result: validation_missing`.
 
 ## Minimal-Set Policy
 
@@ -91,13 +99,16 @@ Never list orchestrator policy files, reference documents, inventories, changelo
 - Keep normal selections to 1-3 skills.
 - Exceed 4 skills only when the user explicitly asks for cross-phase work and each added skill has a concrete reason.
 - Prefer exactly one browser skill at a time.
+- The final `chosen_subskills` set MUST contain at most one browser-validation skill from `webapp-testing`, `browser-testing-with-devtools`, and `agent-browser`. If the selected browser path fails, report that failure in `validation` and `telemetry`; do not append a fallback browser skill in the same run.
 - Prefer exactly one root-cause debugging skill at a time.
+- The final `chosen_subskills` set MUST contain exactly one debugging skill from `systematic-debugging` and `debugging-and-error-recovery` for any debugging route. Do not combine them as "primary plus helper"; `debugging-and-error-recovery` is a primary route, not a helper for `systematic-debugging`.
 - Do not delegate to plugin-owned or other external skills unless the user explicitly asks for them.
 - Treat platform-native skills as conditional candidates, not guaranteed targets. Only select them when the current runtime actually exposes them in the live skill inventory.
 - Before selecting frontend debugging or browser validation skills, confirm that the repository exposes a runnable app or UI surface, or that the user explicitly points to one.
 - For non-app repositories, do not infer frontend bug-fixing or browser validation from vague page, UI, or bug language.
 - Use `planning-with-files-zh` only for long, multi-step, or cross-session work.
 - When the user explicitly wants to create or revise a managed skill in this repository, prefer `managed-skill-creator`; use `find-skills` only for external capability discovery.
+- For repository-managed skill creation or update, the final `chosen_subskills` MUST be `managed-skill-creator` only unless the user explicitly asks for external skill authoring help. Do not add platform-native `skill-creator`; it is forbidden for this repo-owned managed-skill route.
 - Use `find-skills` only when local skills are insufficient or the user explicitly asks for capability discovery.
 - Use `context-engineering` when agent output quality degrades, context is stale, or a new session needs grounding before task execution.
 
@@ -105,12 +116,12 @@ Never list orchestrator policy files, reference documents, inventories, changelo
 
 Pick the dominant scenario first, then add only conditional helpers:
 
-- 项目审核: start from `code-review-and-quality`
-- 架构分析: normalize against `route-profiles.yaml::architecture_analysis`; delegated subskills must default to `spec-driven-development` → `api-and-interface-design` → `planning-and-task-breakdown`; treat minimal route validation, dry runs, and brief-plan requests as the same governed route, and do not omit `planning-and-task-breakdown` just because the requested output is short
-- 页面生成: default allowed local skills are only `frontend-design`, `frontend-ui-engineering`, `api-and-interface-design`, `vercel-react-best-practices`, and `brainstorming` when the request is clearly vague; prefer `frontend-design` for style-led prompts, prefer `frontend-ui-engineering` for React, components, implementation, page structure, or runnable code, add `api-and-interface-design` only for interface or data boundaries, add `vercel-react-best-practices` only for React / Next.js best-practice requirements, and never escape to plugin-owned or external frontend skills unless the user explicitly asks for them
-- 调试修复: choose exactly one of `systematic-debugging` or `debugging-and-error-recovery` by default; never delegate both in the same default route
-- 浏览器验证: start from exactly one of `webapp-testing`, `browser-testing-with-devtools`, or `agent-browser`
-- 交付上线: start from `shipping-and-launch`
+- 项目审核: must start from `code-review-and-quality`, including minimal route validation; `planning-and-task-breakdown` must not replace it just because the prompt asks for a concise plan or routing trace
+- 架构分析: normalize against `route-profiles.yaml::architecture_analysis`; delegated subskills must be exactly the required chain `spec-driven-development` → `api-and-interface-design` → `planning-and-task-breakdown` unless optional prepend skills are explicitly needed; treat minimal route validation, dry runs, and brief-plan requests as the same governed route; selecting `planning-and-task-breakdown` alone is invalid
+- 页面生成: must select at least one downstream page-generation skill even for minimal route validation; default allowed local skills are only `frontend-design`, `frontend-ui-engineering`, `api-and-interface-design`, `vercel-react-best-practices`, and `brainstorming` when the request is clearly vague; prefer `frontend-design` for style-led prompts, prefer `frontend-ui-engineering` for React, components, implementation, page structure, or runnable code, add `api-and-interface-design` only for interface or data boundaries, add `vercel-react-best-practices` only for React / Next.js best-practice requirements, and never escape to plugin-owned or external frontend skills unless the user explicitly asks for them
+- 调试修复: choose exactly one of `systematic-debugging` or `debugging-and-error-recovery` by default; never delegate both in the same default route, including route-validation-only prompts
+- 浏览器验证: choose exactly one of `webapp-testing`, `browser-testing-with-devtools`, or `agent-browser`; never include a second browser skill as fallback in the same `chosen_subskills`
+- 交付上线: must start from `shipping-and-launch`, including minimal route validation; `planning-and-task-breakdown` must not replace it just because the prompt asks for a concise plan
 - 文件规划与辅助技能发现: start from `planning-with-files-zh`, `planning-and-task-breakdown`, `managed-skill-creator`, or `find-skills`
 - 全自动工作流管线建设: start from `agency-agents-orchestrator`
 
@@ -125,7 +136,9 @@ You MUST NOT read all reference files blindly:
 - If the request is creative but underspecified, select `brainstorming` before implementation-facing skills.
 - For architecture analysis, default delegated subskills must be `spec-driven-development`, `api-and-interface-design`, and `planning-and-task-breakdown` in that order; prepend `idea-refine` or `brainstorming` only when goals or boundaries are still unclear, and do not skip the first two unless the repository clearly lacks any spec, interface, or design surface to analyze.
 - For architecture analysis, including minimal route validation, dry runs, and concise-plan requests, the final normalized set must still include `planning-and-task-breakdown`.
+- For architecture route validation, never collapse the governed chain to `planning-and-task-breakdown` alone. A route missing either `spec-driven-development` or `api-and-interface-design` is invalid even if the requested output asks for a short plan.
 - For page generation, default allowed local skills are only `frontend-design`, `frontend-ui-engineering`, `api-and-interface-design`, `vercel-react-best-practices`, and `brainstorming` when the request is clearly vague.
+- For page-generation route validation, do not use fast-path or an empty route. Select `frontend-ui-engineering` for implementation/page-structure wording or `frontend-design` for style-led wording.
 - For page generation, prefer `frontend-design` for style-led prompts and `frontend-ui-engineering` for React, components, implementation, page structure, or runnable-code prompts.
 - For page generation, add `api-and-interface-design` only when interfaces, data boundaries, or module contracts are part of the request, and add `vercel-react-best-practices` only when React / Next.js best-practice compliance is explicitly relevant.
 - For page generation, never delegate to plugin-owned or external frontend skills unless the user explicitly asks for them.
@@ -136,13 +149,17 @@ You MUST NOT read all reference files blindly:
 - If the fix needs regression protection, add `test-driven-development`.
 - Use `systematic-debugging` for ambiguous, cross-layer, repeatedly failed, or root-cause-unclear debugging; use `debugging-and-error-recovery` for standard reproducible test, build, and runtime failures with a clearer failure surface.
 - Never delegate both debugging skills in the same default route. Escalate from one to the other only when validation shows the first choice was insufficient.
+- A debugging route-validation prompt still counts as a debugging route for mutual exclusion. Select one debug skill, read that one child `SKILL.md`, and record any insufficiency under `validation` instead of adding the other debug skill.
 - If launch risk is the focus, add `ci-cd-and-automation`, `deprecation-and-migration`, `security-and-hardening`, `performance-optimization`, or `documentation-and-adrs` only when the request actually calls for them.
+- For project-review route validation, do not use fast-path and do not substitute `planning-and-task-breakdown`. Select `code-review-and-quality` as the primary downstream skill, then keep the audit trace concise inside that route.
+- For shipping or launch route validation, do not use fast-path and do not substitute `planning-and-task-breakdown`. Select `shipping-and-launch` as the primary downstream skill, then keep any plan concise inside that route.
 - If deep distributed backend concepts, heavy global domain architecture, or microservice dismantling are explicitly requested, delegate to `agency-backend-architect` or `agency-software-architect`.
 - If hardcore security vulnerability audits, extreme threat modeling, or core penetration protection are required, add `agency-security-engineer`.
 - If heavy infrastructure-as-code rebuilding, massive CI/CD pipeline automation, or hardcore system-level SRE stability implementations are needed for launch, add `agency-devops-automator` or `agency-sre-site-reliability-engineer`.
 - If the task requires brutal extreme-performance testing or heavy system profiling across bottlenecks, add `agency-performance-benchmarker`.
 - Use `agency-agents-orchestrator` as the primary route when the user explicitly requests building autonomous pipelines or managing multi-agent automated orchestration.
 - If local browser validation is required after page work, add one validation skill after the build skill, not before it.
+- For browser validation failures, keep the selected browser skill stable through `execution`, `validation`, and `telemetry`; a failed browser launch or unreachable localhost target is evidence for that route, not permission to add another browser skill.
 
 ## Validation Rules
 
