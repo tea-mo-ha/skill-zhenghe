@@ -377,6 +377,42 @@ def sync_target(
     return _publish_release(manifest, destination)
 
 
+def status_target(source_dirs: list[Path], destination: Path) -> list[str]:
+    """Compare source skill hashes against live runtime copies."""
+    lines: list[str] = []
+    if not destination.exists():
+        return [f"target directory does not exist: {destination}"]
+
+    for source in source_dirs:
+        skill_name = source.name
+        live_dir = destination / skill_name
+        source_hash = _hash_tree(source)
+
+        if not live_dir.exists():
+            lines.append(f"{skill_name}: ❌ missing (not deployed)")
+            continue
+
+        live_release_id = _read_live_release_id(live_dir)
+        if not live_release_id:
+            lines.append(f"{skill_name}: ⚠️  legacy (no release marker)")
+            continue
+
+        marker_path = live_dir / RELEASE_MARKER
+        try:
+            marker = _read_json(marker_path)
+        except (json.JSONDecodeError, FileNotFoundError):
+            lines.append(f"{skill_name}: ⚠️  corrupt marker")
+            continue
+
+        deployed_hash = marker.get("source_hash", "")
+        if deployed_hash == source_hash:
+            lines.append(f"{skill_name}: ✅ in sync (release {live_release_id})")
+        else:
+            lines.append(f"{skill_name}: 🔄 drifted (source changed since release {live_release_id})")
+
+    return lines
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Publish managed skills from this repository into runtime skill directories.",
@@ -397,6 +433,11 @@ def parse_args() -> argparse.Namespace:
         "--rollback-release",
         help="Rollback to a previously published release id for the selected targets.",
     )
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="Compare source skill hashes against live runtime copies without modifying anything.",
+    )
     return parser.parse_args()
 
 
@@ -408,6 +449,15 @@ def main() -> int:
 
     print(f"Repository root: {root}")
     print(f"Managed skill count: {len(sources)}")
+
+    if args.status:
+        for name in args.targets:
+            destination = targets[name]
+            print(f"\n[{name}] {destination}")
+            for line in status_target(sources, destination):
+                print(f"  - {line}")
+        print("\nStatus check complete. No files were modified.")
+        return 0
 
     if args.rollback_release:
         print(f"Rollback mode: {args.rollback_release}")

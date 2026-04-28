@@ -5,6 +5,7 @@ const SECTION_NAMES = new Set([
   "plan",
   "execution",
   "validation",
+  "telemetry",
 ]);
 
 function parseSections(output) {
@@ -44,7 +45,7 @@ function extractSkills(block) {
     }
 
     const content = line.slice(1).trim();
-    const leadMatch = content.match(/^(?:`([^`]+)`|([A-Za-z0-9:_-]+))(?=\s*:|$)/);
+    const leadMatch = content.match(/^(?:`([^`]+)`|([A-Za-z0-9:_-]+))(?=\s*[:\-]|\s*$)/);
     if (leadMatch) {
       skills.push(leadMatch[1] ?? leadMatch[2]);
       continue;
@@ -88,6 +89,7 @@ export function contractAssert(output, context) {
     "plan",
     "execution",
     "validation",
+    "telemetry",
   ];
   const sections = parseSections(output);
   const missing = requiredSections.filter((name) => !sections[name]);
@@ -247,4 +249,27 @@ export function mutuallyExclusiveSkillsAssert(output, context) {
   }
 
   return { pass: true, score: 1, reason: "No mutually exclusive skill combination was selected." };
+}
+
+export function fastPathBypassAssert(output) {
+  const sections = parseSections(output);
+  const hasRouting = Object.hasOwn(sections, "chosen_subskills") || Object.hasOwn(sections, "routing_context");
+
+  if (hasRouting) {
+    return {
+      pass: false,
+      score: 0,
+      reason: "Trivial task should bypass routing entirely, but found chosen_subskills or routing_context sections.",
+    };
+  }
+
+  if (!output || !output.trim()) {
+    return {
+      pass: false,
+      score: 0,
+      reason: "Trivial task should produce a direct answer, but got empty output.",
+    };
+  }
+
+  return { pass: true, score: 1, reason: "Trivial task was answered directly without routing overhead." };
 }

@@ -6,7 +6,7 @@ providers:
   - id: file://./provider_codex.py
     label: codex-live
     config:
-      repo_root: /Users/mo/Documents/skill-zhenghe
+      repo_root: ${SKILL_ZHENGHE_ROOT:-/Users/mo/Documents/skill-zhenghe}
       timeout_sec: 90
       max_attempts: 2
       model: gpt-5.4-mini
@@ -16,20 +16,22 @@ providers:
       disable_features:
         - plugins
 tests:
+  # ── Scenario 1: Architecture Analysis ──
   - description: architecture route uses the forced local analysis chain
     vars:
-      task_prompt: "使用 skill-suite-orchestrator 对这个项目做最小架构路由验证。先输出 chosen_subskills，再输出 skill_file_reads、routing_context、不超过 3 条的简短 plan、1-2 条 execution、1-2 条 validation；不要展开详细分析。"
+      task_prompt: "使用 skill-suite-orchestrator 对这个项目做最小架构路由验证。先输出 chosen_subskills，再输出 routing_context、不超过 3 条的简短 plan、skill_file_reads、1-2 条 execution、1-2 条 validation、telemetry；不要展开详细分析。"
     assert:
       - type: javascript
         value: file://./assertions.mjs:contractAssert
         config:
           required_sections:
             - chosen_subskills
-            - skill_file_reads
             - routing_context
             - plan
+            - skill_file_reads
             - execution
             - validation
+            - telemetry
       - type: javascript
         value: file://./assertions.mjs:expectedSkillSetAssert
         config:
@@ -53,20 +55,22 @@ tests:
       - type: javascript
         value: file://./assertions.mjs:skillFileReadsOnlyChildSkillsAssert
 
+  # ── Scenario 2: Managed Skill Creation ──
   - description: managed skill creation stays on the local skill-management route
     vars:
-      task_prompt: "使用 skill-suite-orchestrator 对这个仓库做最小 skill 管理路由验证：用户要新增一个 managed skill，用来创建或更新本地 skill。先输出 chosen_subskills，再输出 skill_file_reads、routing_context、不超过 3 条的简短 plan、1-2 条 execution、1-2 条 validation；不要展开详细实现建议，也不要修改任何文件。"
+      task_prompt: "使用 skill-suite-orchestrator 对这个仓库做最小 skill 管理路由验证：用户要新增一个 managed skill，用来创建或更新本地 skill。先输出 chosen_subskills，再输出 routing_context、不超过 3 条的简短 plan、skill_file_reads、1-2 条 execution、1-2 条 validation、telemetry；不要展开详细实现建议，也不要修改任何文件。"
     assert:
       - type: javascript
         value: file://./assertions.mjs:contractAssert
         config:
           required_sections:
             - chosen_subskills
-            - skill_file_reads
             - routing_context
             - plan
+            - skill_file_reads
             - execution
             - validation
+            - telemetry
       - type: javascript
         value: file://./assertions.mjs:expectedSkillSetAssert
         config:
@@ -88,20 +92,22 @@ tests:
       - type: javascript
         value: file://./assertions.mjs:skillFileReadsOnlyChildSkillsAssert
 
+  # ── Scenario 3: Page Generation ──
   - description: page generation stays on local frontend routes
     vars:
-      task_prompt: "使用 skill-suite-orchestrator 对这个项目做最小页面生成路由验证。先输出 chosen_subskills，再输出 skill_file_reads、routing_context、不超过 3 条的简短 plan、1-2 条 execution、1-2 条 validation；不要展开详细实现建议。"
+      task_prompt: "使用 skill-suite-orchestrator 对这个项目做最小页面生成路由验证。先输出 chosen_subskills，再输出 routing_context、不超过 3 条的简短 plan、skill_file_reads、1-2 条 execution、1-2 条 validation、telemetry；不要展开详细实现建议。"
     assert:
       - type: javascript
         value: file://./assertions.mjs:contractAssert
         config:
           required_sections:
             - chosen_subskills
-            - skill_file_reads
             - routing_context
             - plan
+            - skill_file_reads
             - execution
             - validation
+            - telemetry
       - type: javascript
         value: file://./assertions.mjs:expectedAnySkillAssert
         config:
@@ -125,20 +131,22 @@ tests:
       - type: javascript
         value: file://./assertions.mjs:skillFileReadsOnlyChildSkillsAssert
 
+  # ── Scenario 4: Debugging Repair ──
   - description: debugging route keeps the two debug protocols mutually exclusive
     vars:
-      task_prompt: "使用 skill-suite-orchestrator 对这个报错做最小调试路由验证：TypeError: Cannot read properties of undefined (reading 'map')。先输出 chosen_subskills，再输出 skill_file_reads、routing_context、不超过 3 条的简短 plan、1-2 条 execution、1-2 条 validation；不要展开详细修复。"
+      task_prompt: "使用 skill-suite-orchestrator 对这个报错做最小调试路由验证：TypeError: Cannot read properties of undefined (reading 'map')。先输出 chosen_subskills，再输出 routing_context、不超过 3 条的简短 plan、skill_file_reads、1-2 条 execution、1-2 条 validation、telemetry；不要展开详细修复。"
     assert:
       - type: javascript
         value: file://./assertions.mjs:contractAssert
         config:
           required_sections:
             - chosen_subskills
-            - skill_file_reads
             - routing_context
             - plan
+            - skill_file_reads
             - execution
             - validation
+            - telemetry
       - type: javascript
         value: file://./assertions.mjs:expectedAnySkillAssert
         config:
@@ -158,3 +166,119 @@ tests:
             - skill-suite-orchestrator
       - type: javascript
         value: file://./assertions.mjs:skillFileReadsOnlyChildSkillsAssert
+
+  # ── Scenario 5: Project Review ──
+  - description: project review routes to code-review-and-quality
+    vars:
+      task_prompt: "使用 skill-suite-orchestrator 对这个项目做最小审核路由验证。先输出 chosen_subskills，再输出 routing_context、不超过 3 条的简短 plan、skill_file_reads、1-2 条 execution、1-2 条 validation、telemetry；不要展开详细审核。"
+    assert:
+      - type: javascript
+        value: file://./assertions.mjs:contractAssert
+        config:
+          required_sections:
+            - chosen_subskills
+            - routing_context
+            - plan
+            - skill_file_reads
+            - execution
+            - validation
+            - telemetry
+      - type: javascript
+        value: file://./assertions.mjs:expectedSkillSetAssert
+        config:
+          expected_skills:
+            - code-review-and-quality
+          exact_order: false
+      - type: javascript
+        value: file://./assertions.mjs:noDisallowedSkillsAssert
+        config:
+          disallowed_skills:
+            - skill-suite-orchestrator
+      - type: javascript
+        value: file://./assertions.mjs:skillFileReadsCoverSelectedAssert
+        config:
+          managed_skills:
+            - code-review-and-quality
+      - type: javascript
+        value: file://./assertions.mjs:skillFileReadsOnlyChildSkillsAssert
+
+  # ── Scenario 6: Shipping & Launch ──
+  - description: shipping route starts from shipping-and-launch
+    vars:
+      task_prompt: "使用 skill-suite-orchestrator 对这个项目做最小交付上线路由验证。先输出 chosen_subskills，再输出 routing_context、不超过 3 条的简短 plan、skill_file_reads、1-2 条 execution、1-2 条 validation、telemetry；不要展开详细上线步骤。"
+    assert:
+      - type: javascript
+        value: file://./assertions.mjs:contractAssert
+        config:
+          required_sections:
+            - chosen_subskills
+            - routing_context
+            - plan
+            - skill_file_reads
+            - execution
+            - validation
+            - telemetry
+      - type: javascript
+        value: file://./assertions.mjs:expectedSkillSetAssert
+        config:
+          expected_skills:
+            - shipping-and-launch
+          exact_order: false
+      - type: javascript
+        value: file://./assertions.mjs:noDisallowedSkillsAssert
+        config:
+          disallowed_skills:
+            - skill-suite-orchestrator
+      - type: javascript
+        value: file://./assertions.mjs:skillFileReadsCoverSelectedAssert
+        config:
+          managed_skills:
+            - shipping-and-launch
+      - type: javascript
+        value: file://./assertions.mjs:skillFileReadsOnlyChildSkillsAssert
+
+  # ── Scenario 7: Browser Validation ──
+  - description: browser validation picks exactly one browser skill
+    vars:
+      task_prompt: "使用 skill-suite-orchestrator 做最小浏览器验证路由验证：这个项目有一个运行在 localhost:3000 的 Web 应用，帮我用浏览器验证其页面流程。先输出 chosen_subskills，再输出 routing_context、不超过 3 条的简短 plan、skill_file_reads、1-2 条 execution、1-2 条 validation、telemetry；不要展开详细验证。"
+    assert:
+      - type: javascript
+        value: file://./assertions.mjs:contractAssert
+        config:
+          required_sections:
+            - chosen_subskills
+            - routing_context
+            - plan
+            - skill_file_reads
+            - execution
+            - validation
+            - telemetry
+      - type: javascript
+        value: file://./assertions.mjs:expectedAnySkillAssert
+        config:
+          expected_any_skills:
+            - webapp-testing
+            - browser-testing-with-devtools
+            - agent-browser
+      - type: javascript
+        value: file://./assertions.mjs:mutuallyExclusiveSkillsAssert
+        config:
+          mutually_exclusive_groups:
+            - - webapp-testing
+              - browser-testing-with-devtools
+              - agent-browser
+      - type: javascript
+        value: file://./assertions.mjs:noDisallowedSkillsAssert
+        config:
+          disallowed_skills:
+            - skill-suite-orchestrator
+      - type: javascript
+        value: file://./assertions.mjs:skillFileReadsOnlyChildSkillsAssert
+
+  # ── Scenario 8: Fast-Path Bypass ──
+  - description: trivial tasks bypass routing entirely
+    vars:
+      task_prompt: "这个仓库的 LICENSE 是什么类型？"
+    assert:
+      - type: javascript
+        value: file://./assertions.mjs:fastPathBypassAssert
