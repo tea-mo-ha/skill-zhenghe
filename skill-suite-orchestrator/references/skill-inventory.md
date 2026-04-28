@@ -1,20 +1,27 @@
 # Skill Inventory
 
-> Authoritative catalog for orchestrator routing. Updated: 2026-04-14.
+> Authoritative catalog for orchestrator routing. Updated: 2026-04-17.
 
 This inventory distinguishes between **managed skills** (SKILL.md lives in this repo, version-controlled by us) and **platform-native skills** (provided by the host runtime, referenced for routing but not version-managed here).
 
 ## Version Governance
 
-- **Managed skills** (`addy-skills/`, `extra-skills/`): Changes flow through this repository's Git history. Orchestrator routing and runtime execution are guaranteed to reference the same SKILL.md.
+- **Managed skills** (`addy-skills/`, `extra-skills/`): This repository is the source of truth. Runtime copies must be refreshed from this repository, preferably via `scripts/sync_managed_skills.py`, before expecting route policy and runtime execution to match exactly.
 - **Platform-native skills**: The host platform (Antigravity / Codex) owns the SKILL.md. This inventory records only the routing description. If the platform updates a native skill's behavior, the orchestrator's routing decisions remain valid because they depend on intent classification, not on the skill's internal implementation.
 - **Rule**: Do not copy platform-native SKILL.md files into this repository. Copies create hidden version drift between routing expectations and runtime execution.
+
+## Availability Governance
+
+- Managed skills are legal routing targets when the current runtime can read the repository-local source or a synced runtime copy derived from it.
+- Platform-native skills are legal routing targets only when the current host runtime actually exposes them in the live skill inventory.
+- An inventory entry is not proof that a platform-native skill is installed or usable in the current environment.
+- If a platform-native skill is unavailable at runtime, the orchestrator must not keep it in `chosen_subskills`; it must fall back or report the capability as unavailable.
 
 ---
 
 ## Managed: addy-skills
 
-> Source: `addy-skills/` — 20 skills, fully managed.
+> Source: `addy-skills/` — 21 skills, fully managed (`SKILL.md`-backed).
 
 | Skill | 用途 |
 | --- | --- |
@@ -31,6 +38,7 @@ This inventory distinguishes between **managed skills** (SKILL.md lives in this 
 | `git-workflow-and-versioning` | 处理分支、提交、冲突、版本化和变更组织。 |
 | `idea-refine` | 把模糊想法收敛成更清晰的目标、方向和约束。 |
 | `incremental-implementation` | 把较大的实现拆成渐进式、可验证的小切片。 |
+| `managed-skill-creator` | 新增或更新本仓库的 managed skill，并同步 inventory、路由、文档与回归。 |
 | `performance-optimization` | 做性能分析、瓶颈定位和优化。 |
 | `planning-and-task-breakdown` | 在需求已较清晰时拆任务、排序依赖、写验收标准。 |
 | `security-and-hardening` | 处理输入校验、鉴权、密钥、依赖风险和硬化。 |
@@ -55,6 +63,13 @@ This inventory distinguishes between **managed skills** (SKILL.md lives in this 
 
 | Skill | 用途 | 路由角色 |
 | --- | --- | --- |
+| `agency-agents-orchestrator` | 管线管理与整个开发流的多智能体自动化编排。 | 全自动工作流管线建设主路由 |
+| `agency-backend-architect` | 深度后端的系统架构、数据库常规与微服务核心业务设计。 | 架构分析高级辅助 |
+| `agency-devops-automator` | 自动化基础设施建设、CI/CD 深度管线开发与大规模改造。 | 交付上线高级辅助 |
+| `agency-performance-benchmarker`| 底层性能深度分析、系统级极限容量基准测试与优化。 | 项目性能深度诊断 |
+| `agency-security-engineer` | 应用层安全审查、红线防御、威胁建模与漏洞防范深查。 | 项目审核安全深度防御 |
+| `agency-software-architect` | 极度复杂的大规模系统设计、领域驱动设计与跨域架构统筹。 | 架构分析高级辅助 |
+| `agency-sre-site-reliability-engineer` | SLO、熔断告警、高可用性部署设计与核心链路稳定性保证。 | 交付上线稳定性保障 |
 | `brainstorming` | 在创意型或需求不完整的任务里先做设计澄清和方案选择。 | 页面生成前置辅助；架构分析前置澄清 |
 | `find-skills` | 当本地技能不够或用户想扩展能力时，帮助发现和安装新 skill。 | 仅在能力缺口时触发 |
 | `mcp-builder` | 构建 MCP server、工具接口和协议层时使用。 | 架构分析条件辅助 |
@@ -63,14 +78,7 @@ This inventory distinguishes between **managed skills** (SKILL.md lives in this 
 | `systematic-debugging` | 以"先根因、后修复"为硬约束的调试协议。 | 调试主路由（与 `debugging-and-error-recovery` 互斥） |
 | `vercel-react-best-practices` | 在 React / Next.js 项目中套用 Vercel 的性能和实现最佳实践。 | 页面生成条件辅助 |
 
-## Deprecated
-
-| Skill | 状态 | 说明 |
-| --- | --- | --- |
-| `using-agent-skills` | ⛔ DEPRECATED | 原有 meta-skill，职责已被 `skill-suite-orchestrator` 完全接管。保留仅用于维护 skill suite 自身时的参考。不参与任何任务的默认路由。 |
-
 ## Default Exclusions
 
 - `plugins/` 下的 skill 不纳入默认路由面，除非用户明确要求插件工作流。
 - `senior-fullstack` 不作为默认首选，因为它过于宽泛，不符合"最小必要集"原则。
-- Deprecated skills 不参与路由。

@@ -1,2 +1,7 @@
 plugins/claude-mem
 **/.DS_Store
+.promptfoo/
+promptfoo-results.json
+evals/promptfoo/results.json
+**/__pycache__/
+*.py[cod]

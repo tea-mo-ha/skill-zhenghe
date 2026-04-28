@@ -1,0 +1,164 @@
+version: 2
+updated: 2026-04-27
+
+# Machine-readable normalization profiles for the orchestrator's governed routes.
+# Use this file to normalize the final chosen_subskills set before emitting output.
+
+scenarios:
+  project_review:
+    required:
+      - code-review-and-quality
+    optional:
+      - security-and-hardening
+      - performance-optimization
+      - documentation-and-adrs
+      - systematic-debugging
+      - debugging-and-error-recovery
+      - agency-security-engineer
+      - agency-performance-benchmarker
+    forbidden:
+      - skill-suite-orchestrator
+    mutually_exclusive:
+      - - systematic-debugging
+        - debugging-and-error-recovery
+    normalization_notes:
+      - Start with code-review-and-quality alone; add helpers only when the user explicitly requests security, performance, or documentation scope.
+      - Never substitute planning-and-task-breakdown for project review, including routing-only validation prompts.
+      - Use agency-security-engineer or agency-performance-benchmarker only for deep-dive audits and only when confirmed available at runtime.
+
+  architecture_analysis:
+    required:
+      - spec-driven-development
+      - api-and-interface-design
+      - planning-and-task-breakdown
+    optional_prepend:
+      - idea-refine
+      - brainstorming
+    forbidden:
+      - skill-suite-orchestrator
+    mutually_exclusive: []
+    ordering:
+      required_in_order: true
+      keep_optional_before_required: true
+    normalization_notes:
+      - Treat minimal route validation, dry runs, brief-plan requests, and short architecture summaries as architecture_analysis.
+      - Never omit planning-and-task-breakdown just because the user asked for a short answer or only a concise plan.
+      - Never select planning-and-task-breakdown alone; the required spec -> interface -> planning chain is indivisible for architecture_analysis.
+      - Only skip the required chain when the repository clearly lacks any spec, interface, or design surface to analyze.
+
+  page_generation:
+    required_any:
+      - frontend-design
+      - frontend-ui-engineering
+    optional:
+      - api-and-interface-design
+      - vercel-react-best-practices
+      - brainstorming
+    allowed:
+      - frontend-design
+      - frontend-ui-engineering
+      - api-and-interface-design
+      - vercel-react-best-practices
+      - brainstorming
+    forbidden:
+      - skill-suite-orchestrator
+      - build-web-apps:frontend-skill
+      - build-web-apps:react-best-practices
+    mutually_exclusive: []
+    normalization_notes:
+      - Prefer frontend-design for style-led or visual-direction prompts.
+      - Prefer frontend-ui-engineering for React, components, implementation, or runnable page structure prompts.
+      - Add brainstorming only when requirements are genuinely ambiguous.
+
+  debugging_repair:
+    required_any:
+      - debugging-and-error-recovery
+      - systematic-debugging
+    optional:
+      - test-driven-development
+      - code-simplification
+      - browser-testing-with-devtools
+      - webapp-testing
+    forbidden:
+      - skill-suite-orchestrator
+    mutually_exclusive:
+      - - debugging-and-error-recovery
+        - systematic-debugging
+    normalization_notes:
+      - Choose debugging-and-error-recovery for concrete, visible, directly reproducible failures.
+      - Choose systematic-debugging for unclear, repeated, cross-layer, or root-cause-uncertain failures.
+
+  browser_validation:
+    required_any:
+      - webapp-testing
+      - browser-testing-with-devtools
+      - agent-browser
+    optional:
+      - frontend-ui-engineering
+      - test-driven-development
+    forbidden:
+      - skill-suite-orchestrator
+    mutually_exclusive:
+      - - webapp-testing
+        - browser-testing-with-devtools
+        - agent-browser
+    normalization_notes:
+      - Choose exactly one primary browser skill per route.
+      - Use webapp-testing for Playwright-based local app validation.
+      - Use browser-testing-with-devtools for console, network, DOM, and performance inspection.
+      - Use agent-browser for external website automation or real-flow interaction.
+
+  shipping_launch:
+    required:
+      - shipping-and-launch
+    optional:
+      - ci-cd-and-automation
+      - git-workflow-and-versioning
+      - deprecation-and-migration
+      - documentation-and-adrs
+      - security-and-hardening
+      - performance-optimization
+      - agency-devops-automator
+      - agency-sre-site-reliability-engineer
+    forbidden:
+      - skill-suite-orchestrator
+    mutually_exclusive: []
+    normalization_notes:
+      - Start with shipping-and-launch alone; add helpers only when the launch scope explicitly includes CI, migration, security gates, or SRE concerns.
+      - Use agency-devops-automator or agency-sre-site-reliability-engineer only for deep infrastructure work and only when confirmed available at runtime.
+
+  planning_discovery:
+    required_any:
+      - planning-with-files-zh
+      - planning-and-task-breakdown
+      - managed-skill-creator
+      - find-skills
+    optional:
+      - idea-refine
+      - spec-driven-development
+      - context-engineering
+    forbidden:
+      - skill-suite-orchestrator
+      - skill-creator
+    mutually_exclusive: []
+    normalization_notes:
+      - Use planning-with-files-zh for long, multi-step, or cross-session work.
+      - Use planning-and-task-breakdown when requirements are clear and need task decomposition.
+      - Use managed-skill-creator when the user wants to add or update a repo-managed skill.
+      - Do not combine managed-skill-creator with platform-native skill-creator for repo-managed skill work.
+      - Use find-skills only for external capability discovery.
+
+  autonomous_pipeline:
+    required:
+      - agency-agents-orchestrator
+    optional: []
+    forbidden:
+      - skill-suite-orchestrator
+    mutually_exclusive: []
+    # Informational: orchestrator uses SKILL.md L46 fallback logic, not this field directly.
+    fallback:
+      - planning-with-files-zh
+      - planning-and-task-breakdown
+    normalization_notes:
+      - This is the primary route for building autonomous multi-agent pipelines.
+      - If agency-agents-orchestrator is unavailable at runtime, fall back to planning-with-files-zh or planning-and-task-breakdown and explicitly report the main route as unavailable.

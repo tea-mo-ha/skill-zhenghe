@@ -2,6 +2,7 @@
 
 - Prefer `skill-suite-orchestrator` as the entry skill for software tasks in this repository.
 - Never include `skill-suite-orchestrator` itself in `chosen_subskills`.
+- Prefer `managed-skill-creator` for repo-local managed skill creation or updates; do not rely on the platform-native `skill-creator` for this repository's default route.
 
 ## Page generation
 - Allowed local skills only:

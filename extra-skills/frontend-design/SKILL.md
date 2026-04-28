@@ -49,8 +49,18 @@ Every frontend-design deliverable must include:
 2. **Design Tokens** (CSS custom properties): At minimum `--color-primary`, `--color-accent`, `--color-bg`, `--color-surface`, `--color-text`, `--font-display`, `--font-body`, `--radius`, `--spacing-unit`.
 3. **Working Code**: A single self-contained HTML/CSS/JS file (or framework component) that renders in a browser. No wireframes, no placeholders, no unimplemented stubs.
 4. **Responsive Behavior**: Must render sensibly at 375px and 1440px. Breakpoint strategy stated explicitly.
+5. **Accessibility Baseline**: State the intended contrast floor, focus treatment, reduced-motion fallback for notable animation, and any non-color cue used for status or selection.
 
 **What this skill does NOT deliver**: data fetching logic, state management, API integration, backend contracts. Those belong to `frontend-ui-engineering` or `api-and-interface-design`.
+
+## Accessibility Baseline
+
+`frontend-design` owns the visual accessibility floor even when `frontend-ui-engineering` owns full implementation and testing.
+
+- Target WCAG 2.1 AA contrast for body text, controls, and meaningful icon/text pairings.
+- Define a visible focus treatment in the visual contract; do not rely on browser defaults implicitly.
+- If motion is part of the concept, specify a reduced-motion fallback that preserves hierarchy without the effect.
+- Do not rely on color alone to communicate error, status, selection, or emphasis.
 
 ## Boundary with frontend-ui-engineering
 
@@ -62,7 +72,7 @@ Every frontend-design deliverable must include:
 | **Color** | Palette creation, mood, contrast ratios | Semantic token mapping in code |
 | **Animation** | Motion design, transition feel, micro-interactions | Implementation via CSS/Framer Motion/GSAP |
 | **Layout** | Spatial composition, visual flow, grid-breaking | Responsive grid implementation, flex/grid patterns |
-| **Accessibility** | Color contrast, readability | ARIA, keyboard nav, screen reader testing |
+| **Accessibility** | Contrast budget, focus visibility, reduced-motion expectations, non-color-only cues | ARIA, keyboard nav, screen reader testing, automated/manual audits |
 
 **Handoff rule**: When a task spans both skills, `frontend-design` defines the aesthetic contract (tokens, visual direction, reference implementation), and `frontend-ui-engineering` implements it as production components. Do not duplicate work between the two.
 
@@ -91,5 +101,7 @@ A frontend-design output passes review when:
 - [ ] Design tokens are defined as CSS custom properties
 - [ ] The output renders in a browser without errors
 - [ ] At least one micro-interaction or animation is present and purposeful
+- [ ] Interactive states keep a visible focus treatment and do not depend on color alone
+- [ ] Motion-heavy concepts include a reduced-motion fallback
 - [ ] Two distinct viewport sizes render appropriately (mobile + desktop)
 - [ ] A reviewer could not guess "this was AI-generated" from visual inspection alone
